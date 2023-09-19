@@ -63,9 +63,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(int userId) {
-        Optional<User> user = this.userRepository.getById(userId);
-        if(user.isEmpty()) throw new InvalidIdException("Invalid ID.");
-        else return user.get();
+        if(userRepository.existsById(userId)){
+            return userRepository.getById(userId);
+        }
+        else throw new InvalidIdException("Invalid ID.");
     }
 
     @Override

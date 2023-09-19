@@ -9,7 +9,6 @@ import s3.fontys.babysita.persistence.PosterRepository;
 
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -38,9 +37,10 @@ public class PosterServiceImpl implements  PosterService {
 
     @Override
     public Poster getPoster(int posterId) {
-        Optional<Poster> poster = this.posterRepository.getById(posterId);
-        if(poster.isEmpty()) throw new InvalidIdException("Invalid ID.");
-        else return poster.get();
+        if(posterRepository.existsById(posterId)){
+            return posterRepository.getById(posterId);
+        }
+        else throw new InvalidIdException("Invalid ID.");
     }
 
     @Override

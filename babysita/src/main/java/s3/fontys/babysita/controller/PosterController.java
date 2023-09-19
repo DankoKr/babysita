@@ -34,7 +34,7 @@ public class PosterController {
         try{
             return ResponseEntity.ok(this.posterService.getPoster(id));
         }
-        catch(Exception ex){
+        catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
         }
     }
@@ -45,7 +45,7 @@ public class PosterController {
             posterService.deletePoster(posterId);
             return ResponseEntity.noContent().build();
         }
-        catch(Exception ex){
+        catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
         }
     }
@@ -59,7 +59,7 @@ public class PosterController {
                     poster.getImageUrl(), poster.getEventDate());
             return ResponseEntity.noContent().build();
         }
-        catch(Exception ex){
+        catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
         }
     }
@@ -73,7 +73,7 @@ public class PosterController {
             posterService.patchPoster(oldPoster, patchedPoster.getTitle(), patchedPoster.getDescription(),
                     patchedPoster.getImageUrl(), patchedPoster.getEventDate());
             return ResponseEntity.noContent().build();
-        } catch (Exception ex) {
+        } catch (InvalidIdException ex) {
             throw new InvalidIdException("Invalid ID.");
         }
     }

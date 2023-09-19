@@ -7,7 +7,6 @@ import s3.fontys.babysita.persistence.UserRepository;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Repository
 public class FakeUserRepositoryImpl implements UserRepository {
@@ -33,8 +32,8 @@ public class FakeUserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> getById(int userId) {
-        return Optional.of(savedUsers.get(userId));
+    public User getById(int userId) {
+        return savedUsers.get(userId);
     }
 
     @Override

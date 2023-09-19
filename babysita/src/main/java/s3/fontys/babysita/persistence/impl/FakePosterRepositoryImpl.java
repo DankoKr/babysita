@@ -22,8 +22,8 @@ public class FakePosterRepositoryImpl implements PosterRepository {
     }
 
     @Override
-    public Optional<Poster> getById(int posterId) {
-        return Optional.of(savedPosters.get(posterId));
+    public Poster getById(int posterId) {
+        return savedPosters.get(posterId);
     }
 
     @Override

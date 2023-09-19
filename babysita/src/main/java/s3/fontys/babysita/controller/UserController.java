@@ -29,7 +29,7 @@ public class UserController {
         try{
             return ResponseEntity.ok(this.userService.getUser(id));
         }
-        catch(Exception ex){
+        catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
         }
     }
@@ -69,7 +69,7 @@ public class UserController {
                     user.getProfileImage(), user.getPhoneNumber(), user.getAddress(), user.getAge());
             return ResponseEntity.noContent().build();
         }
-        catch(Exception ex){
+        catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
         }
     }
@@ -83,7 +83,7 @@ public class UserController {
             userService.patchUser(oldUser, patchedUser.getEmail(), patchedUser.getFirstName(), patchedUser.getLastName(),
                     patchedUser.getProfileImage(), patchedUser.getPhoneNumber(), patchedUser.getAddress(), patchedUser.getAge());
             return ResponseEntity.noContent().build();
-        } catch (Exception ex) {
+        } catch (InvalidIdException ex) {
             throw new InvalidIdException("Invalid ID.");
         }
     }
