@@ -37,11 +37,10 @@ public class FakeUserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User save(User user) {
+    public void save(User user) {
         user.setId(NEXT_ID);
         NEXT_ID++;
         savedUsers.put(user.getId(), user);
-        return user;
     }
 
     @Override
@@ -59,11 +58,6 @@ public class FakeUserRepositoryImpl implements UserRepository {
         user.setPhoneNumber(phoneNumber);
         user.setAddress(address);
         user.setAge(age);
-    }
-
-    @Override
-    public int count() {
-        return savedUsers.size();
     }
 
     @Override

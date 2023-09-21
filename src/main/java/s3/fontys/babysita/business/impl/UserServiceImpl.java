@@ -13,7 +13,6 @@ import s3.fontys.babysita.dto.UserDTO;
 import s3.fontys.babysita.persistence.UserRepository;
 
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor

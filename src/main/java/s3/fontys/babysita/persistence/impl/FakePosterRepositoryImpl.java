@@ -27,11 +27,10 @@ public class FakePosterRepositoryImpl implements PosterRepository {
     }
 
     @Override
-    public Poster save(Poster poster) {
+    public void save(Poster poster) {
         poster.setId(NEXT_ID);
         NEXT_ID++;
         savedPosters.put(poster.getId(), poster);
-        return poster;
     }
 
     @Override
@@ -52,8 +51,4 @@ public class FakePosterRepositoryImpl implements PosterRepository {
         return Collections.unmodifiableMap(savedPosters);
     }
 
-    @Override
-    public int count() {
-        return savedPosters.size();
-    }
 }

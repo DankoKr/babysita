@@ -1,10 +1,13 @@
-package s3.fontys.babysita.business.exception;
+package s3.fontys.babysita.business;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
+import s3.fontys.babysita.business.exception.InvalidIdException;
+import s3.fontys.babysita.business.exception.InvalidRoleException;
 
 import java.util.HashMap;
 import java.util.Map;

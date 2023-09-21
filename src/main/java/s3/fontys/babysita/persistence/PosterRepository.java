@@ -10,7 +10,7 @@ public interface PosterRepository {
 
     Poster getById(int posterId);
 
-    Poster save(Poster poster);//Only for dummy data
+    void save(Poster poster);
 
     void deleteById(int posterId);
 
@@ -18,5 +18,4 @@ public interface PosterRepository {
 
     Map<Integer, Poster> getAll();
 
-    int count();
 }
