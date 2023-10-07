@@ -20,4 +20,5 @@ public class Poster {
     private String description;
     private String imageUrl;
     private LocalDate eventDate;
+    private boolean isAppointed;
 }

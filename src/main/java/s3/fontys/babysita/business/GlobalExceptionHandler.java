@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     // Handling invalid IDs
     @ExceptionHandler(InvalidIdException.class)
     public ResponseEntity<String> handleInvalidIdException(InvalidIdException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     // Handling invalid Role
@@ -39,6 +39,6 @@ public class GlobalExceptionHandler {
     // Handling duplicated Username
     @ExceptionHandler(DuplicatedUsernameException.class)
     public ResponseEntity<String> handleDuplicatedUsernameException(DuplicatedUsernameException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 }

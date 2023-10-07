@@ -11,6 +11,7 @@ import lombok.Setter;
 public class Babysitter extends User {
     private String gender;
     private int points;
+    boolean isAvailable;
 
     public Babysitter(int id, @NotBlank(message = "Username is required")
     @Size(min = 6, max = 20, message = "Username must be between 5 and 20 characters") String username,
@@ -20,5 +21,6 @@ public class Babysitter extends User {
         super(id, username, password, email, firstName, lastName, profileImage, phoneNumber, address, role, age);
         this.gender = gender;
         this.points = 0;
+        this.isAvailable = false;
     }
 }
