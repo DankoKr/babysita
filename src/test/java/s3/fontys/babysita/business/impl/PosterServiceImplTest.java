@@ -1,95 +1,152 @@
 package s3.fontys.babysita.business.impl;
 
-import jakarta.validation.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import s3.fontys.babysita.domain.Poster;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import s3.fontys.babysita.business.exception.InvalidIdException;
+import s3.fontys.babysita.business.mapper.PosterMapper;
+import s3.fontys.babysita.dto.PosterDTO;
+import s3.fontys.babysita.persistence.entity.PosterEntity;
 import s3.fontys.babysita.persistence.PosterRepository;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class PosterServiceImplTest {
-    private final PosterRepository posterRepository = mock(PosterRepository.class);
+    @Mock
+    private PosterRepository posterRepository;
+
+    @Mock
+    private PosterMapper posterMapper;
+
+    @InjectMocks
+    private PosterServiceImpl posterService;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     public void createPosterTest() {
-        //Arrange
-        Poster poster = new Poster(1, "title1", "description",
-                "image", LocalDate.now(), false);
+        PosterDTO posterDTO = new PosterDTO(0, "Title", "Description",
+                "ImageUrl", LocalDate.now(), false);
+        PosterEntity posterEntity = new PosterEntity(1, "Title", "Description",
+                "ImageUrl", LocalDate.now(), false);
 
-        //Act
-        when(posterRepository.getById(1)).thenReturn(poster);
-        posterRepository.save(poster);
+        when(posterMapper.toEntityWithoutId(posterDTO)).thenReturn(posterEntity);
+        posterService.createPoster(posterDTO);
 
-        //Assert
-        Poster foundPoster = posterRepository.getById(poster.getId());
-        assertThat(foundPoster).isEqualTo(poster);
+        verify(posterRepository, times(1)).save(posterEntity);
     }
 
     @Test
-    public void createPoster_EmptyTitleTest() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
+    public void editExistingPosterTest() {
+        int posterId = 1;
+        PosterDTO updatedPosterDTO = new PosterDTO(posterId, "Updated Title",
+                "Updated Description", "Updated ImageUrl", LocalDate.now(),
+                true);
+        PosterEntity updatedEntity = new PosterEntity(posterId, "Updated Title",
+                "Updated Description", "Updated ImageUrl", LocalDate.now(),
+                true);
 
-        Poster poster = new Poster(1, "", "description",
-                "image", LocalDate.now(), false);
+        when(posterRepository.existsById(posterId)).thenReturn(true);
+        when(posterMapper.toEntity(updatedPosterDTO)).thenReturn(updatedEntity);
 
-        // Expect a ConstraintViolationException
-        assertThrows(ConstraintViolationException.class, () -> {
-            Set<ConstraintViolation<Poster>> violations = validator.validate(poster);
-            if (!violations.isEmpty()) {
-                throw new ConstraintViolationException(violations);
-            }
-        });
+        posterService.editPoster(posterId, updatedPosterDTO);
+
+        verify(posterRepository, times(1)).save(updatedEntity);
     }
 
     @Test
-    public void editPosterTest() {
-        Poster poster = new Poster(1, "title", "description",
-                "image", LocalDate.now(), false);
+    public void editNonExistingPosterTest() {
+        int posterId = 99;
+        PosterDTO updatedPosterDTO = new PosterDTO(posterId, "Updated Title",
+                "Updated Description", "Updated ImageUrl",
+                LocalDate.now(), true);
 
-        Poster updatedPoster = new Poster(1, "newTitle", "newDesc",
-                "newImage", LocalDate.parse("2023-09-20"), false);
+        when(posterRepository.existsById(posterId)).thenReturn(false);
 
-        when(posterRepository.getById(1)).thenReturn(poster);
-        posterRepository.save(poster);
-
-        // Assume that editPoster method updates the poster and saves it back.
-        // As the real implementation of editPoster is not provided, we make this assumption.
-        posterRepository.editPoster(poster, "newTitle", "newDesc",
-                "newImage", LocalDate.parse("2023-09-20"));
-        when(posterRepository.getById(1)).thenReturn(updatedPoster);
-
-        Poster resultPoster = posterRepository.getById(1);
-        assertThat(resultPoster).isEqualTo(updatedPoster);
+        assertThrows(InvalidIdException.class, () -> posterService.editPoster(posterId, updatedPosterDTO));
     }
 
     @Test
-    public void deletePosterTest() {
-        Poster poster1 = new Poster(1, "title1", "description1",
-                "image1", LocalDate.now(), false);
-        Poster poster2 = new Poster(2, "title2", "description2",
-                "image2", LocalDate.now(), false);
-        Poster poster3 = new Poster(3, "title3", "description3",
-                "image3", LocalDate.now(), false);
+    public void deleteExistingPosterTest() {
+        int posterId = 1;
 
-        when(posterRepository.getById(1)).thenReturn(poster1);
-        when(posterRepository.getById(2)).thenReturn(poster2);
-        when(posterRepository.getById(3)).thenReturn(poster3);
+        when(posterRepository.existsById(posterId)).thenReturn(true);
 
-        posterRepository.save(poster1);
-        posterRepository.save(poster2);
-        posterRepository.save(poster3);
+        posterService.deletePoster(posterId);
 
-        posterRepository.deleteById(2);
-        when(posterRepository.getById(2)).thenReturn(null);
+        verify(posterRepository, times(1)).deleteById(posterId);
+    }
 
-        Poster deletedPoster = posterRepository.getById(2);
-        assertNull(deletedPoster);
+    @Test
+    public void deleteNonExistingPosterTest() {
+        int posterId = 99;
+
+        when(posterRepository.existsById(posterId)).thenReturn(false);
+
+        assertThrows(InvalidIdException.class, () -> posterService.deletePoster(posterId));
+    }
+
+    @Test
+    public void getExistingPosterTest() {
+        int posterId = 1;
+        PosterEntity posterEntity = new PosterEntity(posterId, "Title", "Description",
+                "ImageUrl", LocalDate.now(), false);
+        PosterDTO posterDTO = new PosterDTO(posterId, "Title", "Description",
+                "ImageUrl", LocalDate.now(), false);
+
+        when(posterRepository.findById(posterId)).thenReturn(Optional.of(posterEntity));
+        when(posterMapper.toDTO(posterEntity)).thenReturn(posterDTO);
+
+        PosterDTO fetchedDTO = posterService.getPoster(posterId);
+
+        assertEquals(posterDTO, fetchedDTO);
+    }
+
+    @Test
+    public void getNonExistingPosterTest() {
+        int posterId = 99;
+
+        when(posterRepository.findById(posterId)).thenReturn(Optional.empty());
+
+        assertThrows(InvalidIdException.class, () -> posterService.getPoster(posterId));
+    }
+
+    @Test
+    public void patchExistingPosterTest() {
+        int posterId = 1;
+        PosterDTO patchedPosterDTO = new PosterDTO(posterId, "Patched Title",
+                null, null, null, false);
+        PosterEntity existingEntity = new PosterEntity(posterId, "Original Title",
+                "Original Description", "Original ImageUrl", LocalDate.now(),
+                false);
+
+        when(posterRepository.findById(posterId)).thenReturn(Optional.of(existingEntity));
+
+        posterService.patchPoster(posterId, patchedPosterDTO);
+
+        assertEquals("Patched Title", existingEntity.getTitle());
+        assertEquals("Original Description", existingEntity.getDescription());
+        verify(posterRepository, times(1)).save(existingEntity);
+    }
+
+    @Test
+    public void patchNonExistingPosterTest() {
+        int posterId = 99;
+        PosterDTO patchedPosterDTO = new PosterDTO(posterId, "Patched Title", null,
+                null, null, false);
+
+        when(posterRepository.findById(posterId)).thenReturn(Optional.empty());
+
+        assertThrows(InvalidIdException.class, () -> posterService.patchPoster(posterId, patchedPosterDTO));
     }
 }
 

@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import s3.fontys.babysita.business.PosterService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
-import s3.fontys.babysita.domain.Poster;
 import s3.fontys.babysita.dto.PosterDTO;
 
 import java.util.Map;
@@ -19,12 +18,12 @@ public class PosterController {
     private final PosterService posterService;
 
     @GetMapping()
-    public ResponseEntity<Map<Integer, Poster>> getAllPosters() {
+    public ResponseEntity<Map<Integer, PosterDTO>> getAllPosters() {
         return ResponseEntity.ok(this.posterService.getAllPosters());
     }
 
     @PostMapping()
-    public ResponseEntity<Void> createPoster(@RequestBody @Valid Poster poster)
+    public ResponseEntity<Void> createPoster(@RequestBody @Valid PosterDTO poster)
     {
         posterService.createPoster(poster);
         return ResponseEntity.noContent().build();
@@ -53,11 +52,9 @@ public class PosterController {
 
     @PutMapping("{posterId}")
     public ResponseEntity<Void> editPoster(@PathVariable("posterId") int id,
-                                              @RequestBody @Valid Poster poster) {
+                                              @RequestBody @Valid PosterDTO updatedPosterDTO) {
         try{
-            Poster oldPoster = posterService.getPoster(id);
-            posterService.editPoster(oldPoster, poster.getTitle(), poster.getDescription(),
-                    poster.getImageUrl(), poster.getEventDate());
+            posterService.editPoster(id, updatedPosterDTO);
             return ResponseEntity.noContent().build();
         }
         catch(InvalidIdException ex){
@@ -67,12 +64,10 @@ public class PosterController {
 
     @PatchMapping("{posterId}")
     public ResponseEntity<Void> patchPoster(@PathVariable("posterId") int id,
-                                            @RequestBody @Valid PosterDTO patchedPoster) {
+                                            @RequestBody @Valid PosterDTO patchedPosterDTO) {
 
         try {
-            Poster oldPoster = posterService.getPoster(id);
-            posterService.patchPoster(oldPoster, patchedPoster.getTitle(), patchedPoster.getDescription(),
-                    patchedPoster.getImageUrl(), patchedPoster.getEventDate());
+            posterService.patchPoster(id, patchedPosterDTO);
             return ResponseEntity.noContent().build();
         } catch (InvalidIdException ex) {
             throw new InvalidIdException("Invalid ID.");
