@@ -1,6 +1,7 @@
 package s3.fontys.babysita.persistence.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name="poster")
+@Table(name="posters")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,13 +28,19 @@ public class PosterEntity {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "imageUrl")
+    @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(name = "eventDate")
+    @Column(name = "event_date")
     private LocalDate eventDate;
 
-    @Column(name = "isAppointed")
-    private boolean isAppointed;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="parent_id")
+    private ParentEntity parent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="babysitter_id")
+    private BabysitterEntity babysitter;
 }
 

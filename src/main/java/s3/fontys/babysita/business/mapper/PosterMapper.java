@@ -8,7 +8,5 @@ import s3.fontys.babysita.dto.PosterDTO;
 @Mapper(componentModel = "spring")
 public interface PosterMapper {
     PosterDTO toDTO(PosterEntity posterEntity);
-    @Mapping(target = "id", ignore = true)
-    PosterEntity toEntityWithoutId(PosterDTO posterDTO);
     PosterEntity toEntity(PosterDTO posterDTO);
 }

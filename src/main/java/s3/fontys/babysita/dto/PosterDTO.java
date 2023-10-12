@@ -1,6 +1,7 @@
 package s3.fontys.babysita.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PosterDTO {
-    private int id;
+    private Integer id;
     @NotBlank(message = "Title is required")
     @Size(min = 2, max = 50, message = "Title must be between 2 and 50 characters")
     private String title;
@@ -21,5 +22,7 @@ public class PosterDTO {
     private String description;
     private String imageUrl;
     private LocalDate eventDate;
-    private boolean isAppointed;
+    @NotNull
+    private int parentId;
+    private int babysitterId;
 }

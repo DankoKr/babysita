@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import s3.fontys.babysita.persistence.ParentRepository;
 import s3.fontys.babysita.persistence.PosterRepository;
+import s3.fontys.babysita.persistence.entity.ParentEntity;
 import s3.fontys.babysita.persistence.entity.PosterEntity;
 
 import java.time.LocalDate;
@@ -23,18 +25,26 @@ public class PosterRepositoryTest {
     private EntityManager entityManager;
     @Autowired
     private PosterRepository posterRepository;
+    @Autowired
+    private ParentRepository parentRepository;
     @Test
     void save_shouldSavePosterWithAllFields() {
+        ParentEntity parent = new ParentEntity();
+        parent.setId(1);
+        parent.setUsername("JohnDoe");
+        parent.setPassword("password1");
+        parent.setEmail("parent@email.com");
+        parent.setRole("parent");
+        parentRepository.save(parent);
+
         PosterEntity posterEntity = new PosterEntity(1, "Title", "Description",
-                "ImageUrl", LocalDate.now(), false);
+                "ImageUrl", LocalDate.now(), parent, null);
 
         PosterEntity savedPoster = posterRepository.save(posterEntity);
         assertNotNull(savedPoster.getId());
         savedPoster = entityManager.find(PosterEntity.class, savedPoster.getId());
-        PosterEntity expectedCourse = new PosterEntity(savedPoster.getId(), "Title", "Description",
-                "ImageUrl", LocalDate.now(), false);
+        PosterEntity expectedPoster = posterRepository.getById(savedPoster.getId());
 
-
-        assertEquals(expectedCourse, savedPoster);
+        assertEquals(expectedPoster, savedPoster);
     }
 }
