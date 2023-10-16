@@ -1,16 +1,23 @@
 variables: 
-    GRADLE_OPTS: "-Dorg.gradle.daemon=false" 
-    
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
 stages: 
     - build 
     - test 
-    
+    - sonar
+
 build: 
     stage: build 
     script:
          - ./gradlew assemble 
-    
+
 test: 
     stage: test 
     script:
          - ./gradlew test
+
+sonarqube:
+    stage: sonar
+    script:
+        - ./gradlew sonarqube -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN
+    allow_failure: true
