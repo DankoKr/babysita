@@ -19,6 +19,7 @@ test:
 sonarqube:
   stage: sonar
   script:
-    - ./gradlew sonarqube -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN
+    - ./gradlew sonarqube "-Dsonar.host.url=$env:SONAR_URL" "-Dsonar.login=$env:SONAR_TOKEN"
   allow_failure: true
+
 
