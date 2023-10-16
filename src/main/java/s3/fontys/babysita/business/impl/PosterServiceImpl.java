@@ -1,28 +1,54 @@
 package s3.fontys.babysita.business.impl;
 
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import s3.fontys.babysita.business.ParentService;
 import s3.fontys.babysita.business.PosterService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
-import s3.fontys.babysita.domain.Poster;
+import s3.fontys.babysita.business.mapper.PosterMapper;
+import s3.fontys.babysita.dto.PosterDTO;
 import s3.fontys.babysita.persistence.PosterRepository;
+import s3.fontys.babysita.persistence.entity.ParentEntity;
+import s3.fontys.babysita.persistence.entity.PosterEntity;
 
-import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class PosterServiceImpl implements  PosterService {
     private final PosterRepository posterRepository;
+    private final PosterMapper posterMapper;
+    private final ParentService parentService;
     @Override
-    public void createPoster(Poster poster) {
-        posterRepository.save(poster);
+    public void createPoster(PosterDTO poster) {
+        PosterEntity posterEntity = posterMapper.toEntity(poster);
+        ParentEntity parentEntity = parentService.getParent(poster.getParentId());
+        posterEntity.setParent(parentEntity);
+        posterRepository.save(posterEntity);
     }
 
     @Override
-    public void editPoster(Poster poster, String title, String description, String imageUrl, LocalDate eventDate) {
-        if(posterRepository.existsById(poster.getId())) {
-            posterRepository.editPoster(poster, title, description, imageUrl, eventDate);
+    public Map<Integer, PosterDTO> getAllPosters() {
+        List<PosterEntity> posters = posterRepository.findAll();
+        return posters.stream()
+                .collect(Collectors.toMap(
+                        PosterEntity::getId,      // Key extractor: Poster's ID
+                        posterMapper::toDTO       // Value mapper: Convert entity to DTO
+                ));
+    }
+
+    @Override
+    public void editPoster(int posterId, PosterDTO updatedPosterDTO) {
+        if(posterRepository.existsById(posterId)) {
+            PosterEntity updatedEntity = posterMapper.toEntity(updatedPosterDTO);
+            ParentEntity parent = parentService.getParent(updatedPosterDTO.getParentId());
+            updatedEntity.setId(posterId);
+            updatedEntity.setParent(parent);
+            posterRepository.save(updatedEntity);
         }
         else {throw new InvalidIdException("Invalid ID.");}
     }
@@ -35,34 +61,33 @@ public class PosterServiceImpl implements  PosterService {
         else {throw new InvalidIdException("Invalid ID.");}
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public Poster getPoster(int posterId) {
-        if(posterRepository.existsById(posterId)){
-            return posterRepository.getById(posterId);
-        }
-        else throw new InvalidIdException("Invalid ID.");
+    public PosterDTO getPoster(int posterId) {
+        PosterEntity posterEntity = posterRepository.findById(posterId)
+                .orElseThrow(() -> new InvalidIdException("Poster with ID " + posterId + " not found"));
+        PosterDTO posterDTO = posterMapper.toDTO(posterEntity);
+        posterDTO.setParentId(posterEntity.getParent().getId());
+        return posterDTO;
     }
 
     @Override
-    public Map<Integer, Poster> getAllPosters() {
-        return posterRepository.getAll();
-    }
+    public void patchPoster(int posterId, PosterDTO patchedPosterDTO) {
+        PosterEntity existingEntity = posterRepository.findById(posterId)
+                .orElseThrow(() -> new InvalidIdException("Poster with ID " + posterId + " not found"));
 
-    @Override
-    public void patchPoster(Poster oldPoster, String title, String description, String imageUrl, LocalDate eventDate) {
-        if (title != null) {
-            oldPoster.setTitle(title);
+        if (patchedPosterDTO.getTitle() != null) {
+            existingEntity.setTitle(patchedPosterDTO.getTitle());
         }
-        if (description != null) {
-            oldPoster.setDescription(description);
+        if (patchedPosterDTO.getDescription() != null) {
+            existingEntity.setDescription(patchedPosterDTO.getDescription());
         }
-        if (imageUrl != null) {
-            oldPoster.setImageUrl(imageUrl);
+        if (patchedPosterDTO.getImageUrl() != null) {
+            existingEntity.setImageUrl(patchedPosterDTO.getImageUrl());
         }
-        if (eventDate != null) {
-            oldPoster.setEventDate(eventDate);
+        if (patchedPosterDTO.getEventDate() != null) {
+            existingEntity.setEventDate(patchedPosterDTO.getEventDate());
         }
-
-        posterRepository.editPoster(oldPoster, oldPoster.getTitle(), oldPoster.getDescription(), oldPoster.getImageUrl(), oldPoster.getEventDate());
+        posterRepository.save(existingEntity);
     }
 }

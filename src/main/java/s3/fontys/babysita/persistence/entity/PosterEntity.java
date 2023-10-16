@@ -1,9 +1,8 @@
 package s3.fontys.babysita.persistence.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.Length;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,16 +10,37 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
+@Table(name="posters")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class PosterEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="id")
     private Integer id;
+
+    @Length(min = 2, max = 50)
+    @Column(name = "title")
     private String title;
+
+    @Length(min = 2, max = 500)
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "image_url")
     private String imageUrl;
+
+    @Column(name = "event_date")
     private LocalDate eventDate;
-    private boolean isAppointed;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="parent_id")
+    private ParentEntity parent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="babysitter_id")
+    private BabysitterEntity babysitter;
 }
+

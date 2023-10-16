@@ -8,7 +8,6 @@ import s3.fontys.babysita.business.UserService;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
-import s3.fontys.babysita.domain.User;
 import s3.fontys.babysita.dto.UserDTO;
 
 import java.util.Map;
@@ -20,7 +19,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping()
-    public ResponseEntity<Map<Integer, User>> getAllUsers() {
+    public ResponseEntity<Map<Integer, UserDTO>> getAllUsers() {
         return ResponseEntity.ok(this.userService.getAllUsers());
     }
 
@@ -60,31 +59,4 @@ public class UserController {
         }
     }
 
-    @PutMapping("{userId}")
-    public ResponseEntity<Void> editUser(@PathVariable("userId") int id,
-                                           @RequestBody @Valid UserDTO user) {
-        try{
-            User oldUser = userService.getUser(id);
-            userService.editUser(oldUser, user.getEmail(), user.getFirstName(), user.getLastName(),
-                    user.getProfileImage(), user.getPhoneNumber(), user.getAddress(), user.getAge());
-            return ResponseEntity.noContent().build();
-        }
-        catch(InvalidIdException ex){
-            throw new InvalidIdException("Invalid ID.");
-        }
-    }
-
-    @PatchMapping("{userId}")
-    public ResponseEntity<Void> patchUser(@PathVariable("userId") int id,
-                                            @RequestBody @Valid UserDTO patchedUser) {
-
-        try {
-            User oldUser = userService.getUser(id);
-            userService.patchUser(oldUser, patchedUser.getEmail(), patchedUser.getFirstName(), patchedUser.getLastName(),
-                    patchedUser.getProfileImage(), patchedUser.getPhoneNumber(), patchedUser.getAddress(), patchedUser.getAge());
-            return ResponseEntity.noContent().build();
-        } catch (InvalidIdException ex) {
-            throw new InvalidIdException("Invalid ID.");
-        }
-    }
 }

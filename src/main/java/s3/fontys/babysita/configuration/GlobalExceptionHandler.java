@@ -1,4 +1,4 @@
-package s3.fontys.babysita.business;
+package s3.fontys.babysita.configuration;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
