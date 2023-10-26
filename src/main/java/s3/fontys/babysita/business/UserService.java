@@ -4,7 +4,7 @@ import s3.fontys.babysita.dto.UserDTO;
 import java.util.Map;
 
 public interface UserService {
-    void createUser(UserDTO userDTO);
+    void createUser(UserDTO userDTO, String password);
     void deleteUser(int userId);
     UserDTO getUser(int userId);
     Map<Integer, UserDTO> getAllUsers();

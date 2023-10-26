@@ -1,11 +1,14 @@
 package s3.fontys.babysita.business.impl;
 
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import s3.fontys.babysita.business.UserService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
+import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
+import s3.fontys.babysita.configuration.security.token.AccessToken;
 import s3.fontys.babysita.dto.BabysitterDTO;
 import s3.fontys.babysita.dto.ParentDTO;
 import s3.fontys.babysita.dto.UserDTO;
@@ -21,10 +24,14 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    //private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
+    private final AccessToken requestAccessToken;
 
     @Override
-    public void createUser(UserDTO userDTO) {
+    public void createUser(UserDTO userDTO, String password) {
+        String encodedPassword = passwordEncoder.encode(password);
+        userDTO.setPassword(encodedPassword);
+
         if(userDTO.getRole().equals("parent")){
             ParentDTO parentDTO = userMapper.toParentDTO(userDTO);
             UserEntity userEntity = userMapper.toEntity(parentDTO);
@@ -47,6 +54,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getUser(int userId) {
+        if (!requestAccessToken.getRole().equals("admin")) {
+            if (requestAccessToken.getUserId() != userId) {
+                throw new UnauthorizedDataAccessException("STUDENT_ID_NOT_FROM_LOGGED_IN_USER");
+            }
+        }
+
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new InvalidIdException("User not found"));
         return userMapper.toDTO(userEntity);
@@ -61,10 +74,5 @@ public class UserServiceImpl implements UserService {
                         userMapper::toDTO
                 ));
     }
-
-    //@Override
-    //public boolean checkPassword(UserEntity user, String rawPassword) {
-        //return passwordEncoder.matches(rawPassword, user.getPassword());
-    //}
 }
 

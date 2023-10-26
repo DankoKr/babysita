@@ -13,7 +13,6 @@ import java.util.Map;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/posters")
-@CrossOrigin(origins="*", allowedHeaders = "*")
 public class PosterController {
     private final PosterService posterService;
 
