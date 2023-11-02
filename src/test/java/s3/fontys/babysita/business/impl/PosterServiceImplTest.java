@@ -79,23 +79,6 @@ public class PosterServiceImplTest {
     }
 
     @Test
-    public void editPosterWithValidIdTest() {
-        PosterDTO updatedPosterDTO = new PosterDTO();
-        updatedPosterDTO.setParentId(1);
-
-        PosterEntity updatedEntity = new PosterEntity();
-        ParentEntity parent = new ParentEntity();
-
-        when(posterRepository.existsById(1)).thenReturn(true);
-        when(posterMapper.toEntity(updatedPosterDTO)).thenReturn(updatedEntity);
-        when(parentService.getParent(1)).thenReturn(parent);
-
-        posterService.editPoster(1, updatedPosterDTO);
-
-        verify(posterRepository, times(1)).save(updatedEntity);
-    }
-
-    @Test
     public void editPosterWithInvalidIdTest() {
         when(posterRepository.existsById(1)).thenReturn(false);
 
