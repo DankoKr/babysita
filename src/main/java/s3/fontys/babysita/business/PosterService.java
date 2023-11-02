@@ -1,6 +1,8 @@
 package s3.fontys.babysita.business;
 
 import s3.fontys.babysita.dto.PosterDTO;
+
+import java.util.List;
 import java.util.Map;
 
 public interface PosterService {
@@ -10,5 +12,6 @@ public interface PosterService {
     PosterDTO getPoster(int posterId);
     Map<Integer, PosterDTO> getAllPosters();
     void patchPoster(int posterId, PosterDTO patchedPosterDTO);
+    List<PosterDTO> getUserPosters(int userId);
 }
 

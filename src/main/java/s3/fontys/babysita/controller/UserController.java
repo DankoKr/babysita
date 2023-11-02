@@ -51,11 +51,23 @@ public class UserController {
         }
     }
 
-    @RolesAllowed({"admin"})
+    @RolesAllowed({"admin", "babysitter", "parent"})
     @DeleteMapping("{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable int userId) {
         try{
             userService.deleteUser(userId);
+            return ResponseEntity.noContent().build();
+        }
+        catch(InvalidIdException ex){
+            throw new InvalidIdException("Invalid ID.");
+        }
+    }
+
+    @RolesAllowed({"babysitter", "parent"})
+    @PatchMapping("{userId}")
+    public ResponseEntity<Void> patchUser(@PathVariable int userId, @RequestBody UserDTO userDTO) {
+        try{
+            userService.partialUpdateUser(userId, userDTO);
             return ResponseEntity.noContent().build();
         }
         catch(InvalidIdException ex){

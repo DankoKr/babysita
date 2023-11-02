@@ -9,10 +9,12 @@ import s3.fontys.babysita.business.exception.InvalidRoleException;
 import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
+import s3.fontys.babysita.dto.AdminDTO;
 import s3.fontys.babysita.dto.BabysitterDTO;
 import s3.fontys.babysita.dto.ParentDTO;
 import s3.fontys.babysita.dto.UserDTO;
 import s3.fontys.babysita.persistence.UserRepository;
+import s3.fontys.babysita.persistence.entity.AdminEntity;
 import s3.fontys.babysita.persistence.entity.UserEntity;
 
 import java.util.List;
@@ -42,6 +44,11 @@ public class UserServiceImpl implements UserService {
             UserEntity userEntity = userMapper.toEntity(babysitterDTO);
             userRepository.save(userEntity);
         }
+        else if(userDTO.getRole().equals("admin")){
+            AdminDTO adminDTO = userMapper.toAdminDTO(userDTO);
+            UserEntity userEntity = userMapper.toEntity(adminDTO);
+            userRepository.save(userEntity);
+        }
         else {
             throw new InvalidRoleException("Invalid Role");
         }
@@ -56,7 +63,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUser(int userId) {
         if (!requestAccessToken.getRole().equals("admin")) {
             if (requestAccessToken.getUserId() != userId) {
-                throw new UnauthorizedDataAccessException("STUDENT_ID_NOT_FROM_LOGGED_IN_USER");
+                throw new UnauthorizedDataAccessException("USER_ID_NOT_FROM_LOGGED_IN_USER");
             }
         }
 
@@ -73,6 +80,30 @@ public class UserServiceImpl implements UserService {
                         UserEntity::getId,
                         userMapper::toDTO
                 ));
+    }
+
+    @Override
+    public void partialUpdateUser(Integer id, UserDTO userUpdates) {
+        UserEntity existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new InvalidIdException("Invalid User id"));
+
+        if(userUpdates.getFirstName() != null) {
+            existingUser.setFirstName(userUpdates.getFirstName());
+        }
+        if(userUpdates.getLastName() != null) {
+            existingUser.setLastName(userUpdates.getLastName());
+        }
+        if(userUpdates.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(userUpdates.getPhoneNumber());
+        }
+        if(userUpdates.getAddress() != null) {
+            existingUser.setAddress(userUpdates.getAddress());
+        }
+        if(userUpdates.getAge() != 0) {
+            existingUser.setAge(userUpdates.getAge());
+        }
+
+        userRepository.save(existingUser);
     }
 }
 

@@ -1,5 +1,6 @@
 package s3.fontys.babysita.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import s3.fontys.babysita.business.PosterService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.dto.PosterDTO;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -16,11 +18,19 @@ import java.util.Map;
 public class PosterController {
     private final PosterService posterService;
 
+    @RolesAllowed({"babysitter", "admin"})
     @GetMapping()
     public ResponseEntity<Map<Integer, PosterDTO>> getAllPosters() {
         return ResponseEntity.ok(this.posterService.getAllPosters());
     }
 
+    @RolesAllowed({"parent", "admin", "babysitter"})
+    @GetMapping("user/{userId}")
+    public ResponseEntity<List<PosterDTO>> getUserPosters(@PathVariable("userId") int userId) {
+        return ResponseEntity.ok(this.posterService.getUserPosters(userId));
+    }
+
+    @RolesAllowed({"parent"})
     @PostMapping()
     public ResponseEntity<Void> createPoster(@RequestBody @Valid PosterDTO poster)
     {
@@ -28,6 +38,7 @@ public class PosterController {
         return ResponseEntity.noContent().build();
     }
 
+    @RolesAllowed({"parent", "babysitter", "admin"})
     @GetMapping("{id}")
     public ResponseEntity<Object> getPosterById(@PathVariable("id") int id) {
         try{
@@ -38,6 +49,7 @@ public class PosterController {
         }
     }
 
+    @RolesAllowed({"parent", "admin"})
     @DeleteMapping("{posterId}")
     public ResponseEntity<Void> deletePoster(@PathVariable int posterId) {
         try{
@@ -49,6 +61,7 @@ public class PosterController {
         }
     }
 
+    @RolesAllowed({"parent", "admin"})
     @PutMapping("{posterId}")
     public ResponseEntity<Void> editPoster(@PathVariable("posterId") int id,
                                               @RequestBody @Valid PosterDTO updatedPosterDTO) {
@@ -61,6 +74,7 @@ public class PosterController {
         }
     }
 
+    @RolesAllowed({"parent"})
     @PatchMapping("{posterId}")
     public ResponseEntity<Void> patchPoster(@PathVariable("posterId") int id,
                                             @RequestBody @Valid PosterDTO patchedPosterDTO) {

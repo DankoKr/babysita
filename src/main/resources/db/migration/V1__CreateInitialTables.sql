@@ -30,6 +30,12 @@ CREATE TABLE `babysitters`
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
+CREATE TABLE `admins`
+(
+    user_id int NOT NULL PRIMARY KEY,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
 CREATE TABLE `posters`
 (
     id           int     NOT NULL AUTO_INCREMENT,
