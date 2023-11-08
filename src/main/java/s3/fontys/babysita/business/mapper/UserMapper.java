@@ -43,7 +43,10 @@ public interface UserMapper {
             return toParentEntity((ParentDTO) dto);
         } else if (dto instanceof BabysitterDTO) {
             return toBabysitterEntity((BabysitterDTO) dto);
-        } else {
+        } else if (dto instanceof AdminDTO) {
+            return toAdminEntity((AdminDTO) dto);
+        }
+        else {
             throw new InvalidRoleException("Unknown DTO type!");
         }
     }

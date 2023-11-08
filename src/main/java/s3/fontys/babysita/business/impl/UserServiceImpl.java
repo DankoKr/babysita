@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import s3.fontys.babysita.business.UserService;
+import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
 import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
@@ -14,7 +15,6 @@ import s3.fontys.babysita.dto.BabysitterDTO;
 import s3.fontys.babysita.dto.ParentDTO;
 import s3.fontys.babysita.dto.UserDTO;
 import s3.fontys.babysita.persistence.UserRepository;
-import s3.fontys.babysita.persistence.entity.AdminEntity;
 import s3.fontys.babysita.persistence.entity.UserEntity;
 
 import java.util.List;
@@ -31,27 +31,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(UserDTO userDTO, String password) {
-        String encodedPassword = passwordEncoder.encode(password);
-        userDTO.setPassword(encodedPassword);
+        if(!userRepository.existsByUsername(userDTO.getUsername())){
+            String encodedPassword = passwordEncoder.encode(password);
+            userDTO.setPassword(encodedPassword);
 
-        if(userDTO.getRole().equals("parent")){
-            ParentDTO parentDTO = userMapper.toParentDTO(userDTO);
-            UserEntity userEntity = userMapper.toEntity(parentDTO);
-            userRepository.save(userEntity);
+            if(userDTO.getRole().equals("parent")){
+                ParentDTO parentDTO = userMapper.toParentDTO(userDTO);
+                UserEntity userEntity = userMapper.toEntity(parentDTO);
+                userRepository.save(userEntity);
+            }
+            else if(userDTO.getRole().equals("babysitter")){
+                BabysitterDTO babysitterDTO = userMapper.toBabysitterDTO(userDTO);
+                UserEntity userEntity = userMapper.toEntity(babysitterDTO);
+                userRepository.save(userEntity);
+            }
+            else if(userDTO.getRole().equals("admin")){
+                AdminDTO adminDTO = userMapper.toAdminDTO(userDTO);
+                UserEntity userEntity = userMapper.toEntity(adminDTO);
+                userRepository.save(userEntity);
+            }
+            else {
+                throw new InvalidRoleException("Invalid Role");
+            }
         }
-        else if(userDTO.getRole().equals("babysitter")){
-            BabysitterDTO babysitterDTO = userMapper.toBabysitterDTO(userDTO);
-            UserEntity userEntity = userMapper.toEntity(babysitterDTO);
-            userRepository.save(userEntity);
-        }
-        else if(userDTO.getRole().equals("admin")){
-            AdminDTO adminDTO = userMapper.toAdminDTO(userDTO);
-            UserEntity userEntity = userMapper.toEntity(adminDTO);
-            userRepository.save(userEntity);
-        }
-        else {
-            throw new InvalidRoleException("Invalid Role");
-        }
+        else { throw new DuplicatedUsernameException("Username has already been taken");}
+
     }
 
     @Override

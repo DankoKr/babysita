@@ -10,4 +10,5 @@ import java.util.List;
 public interface PosterRepository extends JpaRepository<PosterEntity, Integer> {
     List<PosterEntity> findByParent(ParentEntity parent);
     List<PosterEntity> findByBabysitter(BabysitterEntity babysitter);
+    List<PosterEntity> findByBabysitterIsNull();
 }

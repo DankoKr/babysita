@@ -18,10 +18,16 @@ import java.util.Map;
 public class PosterController {
     private final PosterService posterService;
 
-    @RolesAllowed({"babysitter", "admin"})
+    @RolesAllowed({"admin"})
     @GetMapping()
     public ResponseEntity<Map<Integer, PosterDTO>> getAllPosters() {
         return ResponseEntity.ok(this.posterService.getAllPosters());
+    }
+
+    @RolesAllowed({"babysitter"})
+    @GetMapping("noBabysitter")
+    public ResponseEntity<Map<Integer, PosterDTO>> getPostersWithoutBabysitter() {
+        return ResponseEntity.ok(this.posterService.getPostersWithoutBabysitterId());
     }
 
     @RolesAllowed({"parent", "admin", "babysitter"})
@@ -84,6 +90,19 @@ public class PosterController {
             return ResponseEntity.noContent().build();
         } catch (InvalidIdException ex) {
             throw new InvalidIdException("Invalid ID.");
+        }
+    }
+
+    @RolesAllowed({"parent"})
+    @PatchMapping("{posterId}/assign/{babysitterId}")
+    public ResponseEntity<String> assignPosterToBabysitter(@PathVariable int posterId, @PathVariable int babysitterId) {
+        try {
+            posterService.assignPosterToBabysitter(posterId, babysitterId);
+            return ResponseEntity.ok("Poster successfully assigned to babysitter.");
+        } catch (InvalidIdException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred while processing your request.");
         }
     }
 

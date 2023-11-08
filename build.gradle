@@ -5,7 +5,7 @@ plugins {
     id "org.sonarqube" version "4.3.1.3277"
 }
 
-//Hardcoded properties because its deprecated, if I dont hardcode them it gives failed authentication
+//If I dont hardcode them it gives failed authentication
 sonarqube {
     properties {
         property "sonar.host.url", "http://localhost:9000"

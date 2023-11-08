@@ -49,3 +49,17 @@ CREATE TABLE `posters`
     FOREIGN KEY (parent_id) REFERENCES parents (user_id),
     FOREIGN KEY (babysitter_id) REFERENCES babysitters (user_id)
 );
+
+CREATE TABLE `job_applications`
+(
+    id           int     NOT NULL AUTO_INCREMENT,
+    description  varchar(500) NOT NULL,
+    babysitter_id     int     NOT NULL,
+    parent_id         int     NOT NULL,
+    poster_id         int     NOT NULL,
+    status VARCHAR(10),
+    PRIMARY KEY (id),
+    FOREIGN KEY (poster_id) REFERENCES posters (id),
+    FOREIGN KEY (babysitter_id) REFERENCES babysitters (user_id),
+    FOREIGN KEY (parent_id) REFERENCES parents (user_id)
+);

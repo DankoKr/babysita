@@ -5,4 +5,5 @@ import s3.fontys.babysita.persistence.entity.UserEntity;
 
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     UserEntity findByUsername(String username);
+    Boolean existsByUsername(String username);
 }

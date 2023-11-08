@@ -43,10 +43,29 @@ public class PosterServiceImpl implements  PosterService {
         List<PosterEntity> posters = posterRepository.findAll();
         return posters.stream()
                 .collect(Collectors.toMap(
-                        PosterEntity::getId,      // Key extractor: Poster's ID
-                        posterMapper::toDTO       // Value mapper: Convert entity to DTO
+                        PosterEntity::getId,
+                        posterMapper::toDTO
                 ));
     }
+
+    @Override
+    public Map<Integer, PosterDTO> getPostersWithoutBabysitterId() {
+        List<PosterEntity> posters = posterRepository.findByBabysitterIsNull();
+        return posters.stream()
+                .collect(Collectors.toMap(
+                        PosterEntity::getId, // Use PosterEntity's id as the map key
+                        poster -> {          // Map the PosterEntity to PosterDTO
+                            PosterDTO dto = posterMapper.toDTO(poster);
+                            if (poster.getBabysitter() != null) {
+                                dto.setBabysitterId(poster.getBabysitter().getId());
+                            }
+                            if (poster.getParent() != null) {
+                                dto.setParentId(poster.getParent().getId());
+                            }
+                            return dto;
+                        }));
+    }
+
 
     @Override
     public void editPoster(int posterId, PosterDTO updatedPosterDTO) {
@@ -79,6 +98,12 @@ public class PosterServiceImpl implements  PosterService {
         PosterDTO posterDTO = posterMapper.toDTO(posterEntity);
         posterDTO.setParentId(posterEntity.getParent().getId());
         return posterDTO;
+    }
+
+    @Override
+    public PosterEntity getPosterEntity(int posterId) {
+        return posterRepository.findById(posterId)
+                .orElseThrow(() -> new InvalidIdException("Poster with ID " + posterId + " not found"));
     }
 
     @Override
@@ -124,6 +149,16 @@ public class PosterServiceImpl implements  PosterService {
         return posters.stream()
                 .map(posterMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void assignPosterToBabysitter(int posterId, int babysitterId) {
+        PosterEntity poster = posterRepository.findById(posterId)
+                .orElseThrow(() -> new InvalidIdException("Poster with ID " + posterId + " not found"));
+
+        BabysitterEntity babysitter = babysitterService.getBabysitter(babysitterId);
+        poster.setBabysitter(babysitter);
+        posterRepository.save(poster);
     }
 
 }
