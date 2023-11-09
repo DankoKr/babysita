@@ -15,7 +15,7 @@ test:
   stage: test
   script:
     - ./gradlew test
-    - git./gradlew jacocoTestReport
+    - ./gradlew jacocoTestReport
 
 sonarqube:
   stage: sonar
