@@ -18,8 +18,10 @@ test:
     - ./gradlew jacocoTestReport
   artifacts:
     paths:
-      - build/reports/jacoco/test/jacocoTestReport.xml
+      - build/customJacocoReportDir/test/jacocoTestReport.xml
       - build/test-results/test/
+    expire_in: 1 week
+
 
 sonarqube:
   stage: sonar
