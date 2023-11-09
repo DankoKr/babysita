@@ -14,7 +14,13 @@ build:
 test:
   stage: test
   script:
-    - ./gradlew clean test jacocoTestReport
+    - ./gradlew test
+    - ./gradlew jacocoTestReport
+  artifacts:
+    reports:
+      junit: build/test-results/test/
+      coverage: build/reports/jacoco/test/
+
 
 sonarqube:
   stage: sonar
