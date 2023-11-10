@@ -1,0 +1,5 @@
+package s3.fontys.babysita.configuration.security.token;
+
+public interface AccessTokenEncoder {
+    String encode(AccessToken accessToken);
+}

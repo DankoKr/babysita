@@ -15,6 +15,12 @@ test:
   stage: test
   script:
     - ./gradlew test
+    - ./gradlew jacocoTestReport
+  artifacts:
+    paths:
+      - build/customJacocoReportDir/test/jacocoTestReport.xml
+      - build/test-results/test/
+
 
 sonarqube:
   stage: sonar
