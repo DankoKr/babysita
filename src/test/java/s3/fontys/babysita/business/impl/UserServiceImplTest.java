@@ -7,11 +7,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
+import s3.fontys.babysita.business.exception.InvalidRoleException;
+import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
+import s3.fontys.babysita.dto.AdminDTO;
+import s3.fontys.babysita.dto.BabysitterDTO;
 import s3.fontys.babysita.dto.ParentDTO;
 import s3.fontys.babysita.dto.UserDTO;
 import s3.fontys.babysita.persistence.UserRepository;
+import s3.fontys.babysita.persistence.entity.AdminEntity;
+import s3.fontys.babysita.persistence.entity.BabysitterEntity;
 import s3.fontys.babysita.persistence.entity.ParentEntity;
 import s3.fontys.babysita.persistence.entity.UserEntity;
 
@@ -174,5 +180,130 @@ public class UserServiceImplTest {
         verify(userRepository).save(existingUser);
     }
 
+    @Test
+    void createAdminUser() {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername("adminUser");
+        userDTO.setRole("admin");
+
+        when(userRepository.existsByUsername("adminUser")).thenReturn(false);
+        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
+        when(userMapper.toAdminDTO(userDTO)).thenReturn(new AdminDTO());
+        when(userMapper.toEntity(any(AdminDTO.class))).thenReturn(new AdminEntity());
+
+        userService.createUser(userDTO, "password");
+
+        verify(userRepository).save(any(AdminEntity.class));
+    }
+
+    @Test
+    void createBabysitterUser() {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername("babysitterUser");
+        userDTO.setRole("babysitter");
+
+        when(userRepository.existsByUsername("babysitterUser")).thenReturn(false);
+        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
+        when(userMapper.toBabysitterDTO(userDTO)).thenReturn(new BabysitterDTO("female", 22, true));
+        when(userMapper.toEntity(any(BabysitterDTO.class))).thenReturn(new BabysitterEntity());
+
+        userService.createUser(userDTO, "password");
+
+        verify(userRepository).save(any(BabysitterEntity.class));
+    }
+
+    @Test
+    void createUserWithInvalidRole() {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername("someUser");
+        userDTO.setRole("invalidRole");
+
+        when(userRepository.existsByUsername("someUser")).thenReturn(false);
+
+        Exception exception = assertThrows(InvalidRoleException.class,
+                () -> userService.createUser(userDTO, "password"));
+
+        assertTrue(exception.getMessage().contains("Invalid Role"));
+    }
+
+    @Test
+    void updateUserPhoneNumber() {
+        Integer userId = 1;
+        UserDTO userUpdates = new UserDTO();
+        userUpdates.setPhoneNumber("1234567890");
+
+        UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+
+        userService.partialUpdateUser(userId, userUpdates);
+
+        verify(existingUser).setPhoneNumber("1234567890");
+        verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    void updateUserAddress() {
+        Integer userId = 1;
+        UserDTO userUpdates = new UserDTO();
+        userUpdates.setAddress("New Address");
+
+        UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+
+        userService.partialUpdateUser(userId, userUpdates);
+
+        verify(existingUser).setAddress("New Address");
+        verify(userRepository).save(existingUser);
+    }
+
+
+    @Test
+    void updateUserAge() {
+        Integer userId = 1;
+        UserDTO userUpdates = new UserDTO();
+        userUpdates.setAge(30);
+
+        UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+
+        userService.partialUpdateUser(userId, userUpdates);
+
+        verify(existingUser).setAge(30);
+        verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    void nonAdminUserAccessingOwnData() {
+        int userId = 1;
+        when(requestAccessToken.getRole()).thenReturn("parent");
+        when(requestAccessToken.getUserId()).thenReturn(userId);
+
+        ParentEntity parentEntity = new ParentEntity();
+        parentEntity.setId(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(parentEntity));
+        when(userMapper.toDTO(parentEntity)).thenReturn(new UserDTO());
+
+        UserDTO result = userService.getUser(userId);
+
+        assertNotNull(result);
+        verify(userRepository).findById(userId);
+    }
+
+
+    @Test
+    void nonAdminUserAccessingOtherUserData() {
+        int userId = 1;
+        int differentUserId = 2;
+        when(requestAccessToken.getRole()).thenReturn("parent");
+        when(requestAccessToken.getUserId()).thenReturn(differentUserId);
+
+        Exception exception = assertThrows(UnauthorizedDataAccessException.class,
+                () -> userService.getUser(userId));
+
+        assertTrue(exception.getMessage().contains("USER_ID_NOT_FROM_LOGGED_IN_USER"));
+    }
 
 }

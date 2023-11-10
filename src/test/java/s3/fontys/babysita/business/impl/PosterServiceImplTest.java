@@ -23,9 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PosterServiceImplTest {
@@ -182,6 +181,115 @@ public class PosterServiceImplTest {
         assertThat(resultPosters).isNotEmpty();
         verify(posterRepository).findByParent(parent);
     }
+
+    @Test
+    void getPostersWithoutBabysitterId_Success() {
+        List<PosterEntity> postersWithoutBabysitter = new ArrayList<>();
+        postersWithoutBabysitter.add(new PosterEntity());
+
+        given(posterRepository.findByBabysitterIsNull()).willReturn(postersWithoutBabysitter);
+        given(posterMapper.toDTO(any(PosterEntity.class))).willReturn(new PosterDTO());
+
+        List<PosterDTO> result = new ArrayList<>(posterService.getPostersWithoutBabysitterId().values());
+
+        assertThat(result).isNotEmpty();
+        assertThat(result).hasSize(postersWithoutBabysitter.size());
+        verify(posterRepository).findByBabysitterIsNull();
+        verify(posterMapper, times(postersWithoutBabysitter.size())).toDTO(any(PosterEntity.class));
+    }
+
+    @Test
+    void getAllPosters_Success() {
+        PosterEntity poster1 = new PosterEntity();
+        poster1.setId(1);
+        PosterEntity poster2 = new PosterEntity();
+        poster2.setId(2);
+
+        List<PosterEntity> posterEntities = Arrays.asList(poster1, poster2);
+
+        when(posterRepository.findAll()).thenReturn(posterEntities);
+
+        PosterDTO posterDTO1 = new PosterDTO();
+        posterDTO1.setId(poster1.getId());
+        when(posterMapper.toDTO(poster1)).thenReturn(posterDTO1);
+
+        PosterDTO posterDTO2 = new PosterDTO();
+        posterDTO2.setId(poster2.getId());
+        when(posterMapper.toDTO(poster2)).thenReturn(posterDTO2);
+
+        Map<Integer, PosterDTO> postersMap = posterService.getAllPosters();
+
+        assertNotNull(postersMap);
+        assertEquals(posterEntities.size(), postersMap.size());
+        assertTrue(postersMap.containsKey(poster1.getId()));
+        assertTrue(postersMap.containsKey(poster2.getId()));
+        assertEquals(posterDTO1, postersMap.get(poster1.getId()));
+        assertEquals(posterDTO2, postersMap.get(poster2.getId()));
+
+        verify(posterRepository).findAll();
+        verify(posterMapper).toDTO(poster1);
+        verify(posterMapper).toDTO(poster2);
+    }
+
+    @Test
+    void getPosterEntity_InvalidIdException() {
+        int invalidPosterId = 1;
+        when(posterRepository.findById(invalidPosterId)).thenReturn(Optional.empty());
+
+        assertThrows(InvalidIdException.class, () -> posterService.getPosterEntity(invalidPosterId));
+
+        verify(posterRepository).findById(invalidPosterId);
+    }
+
+    @Test
+    void patchPoster_UpdateImageUrl() {
+        int posterId = 1;
+        PosterEntity existingEntity = new PosterEntity();
+        PosterDTO patchedPosterDTO = new PosterDTO();
+        patchedPosterDTO.setImageUrl("newImageUrl");
+
+        when(posterRepository.findById(posterId)).thenReturn(Optional.of(existingEntity));
+
+        posterService.patchPoster(posterId, patchedPosterDTO);
+
+        assertEquals("newImageUrl", existingEntity.getImageUrl());
+        verify(posterRepository).save(existingEntity);
+    }
+
+    @Test
+    void patchPoster_UpdateEventDate() {
+        int posterId = 1;
+        PosterEntity existingEntity = new PosterEntity();
+        PosterDTO patchedPosterDTO = new PosterDTO();
+        LocalDate newEventDate = LocalDate.now();
+        patchedPosterDTO.setEventDate(newEventDate);
+
+        when(posterRepository.findById(posterId)).thenReturn(Optional.of(existingEntity));
+
+        posterService.patchPoster(posterId, patchedPosterDTO);
+
+        assertEquals(newEventDate, existingEntity.getEventDate());
+        verify(posterRepository).save(existingEntity);
+    }
+
+    @Test
+    void getUserPosters_Success_ForBabysitterRole() {
+        int userId = 1;
+        BabysitterEntity babysitter = new BabysitterEntity();
+        List<PosterEntity> posters = Arrays.asList(new PosterEntity(), new PosterEntity());
+
+        given(requestAccessToken.getRole()).willReturn("babysitter");
+        given(requestAccessToken.getUserId()).willReturn(userId);
+        given(babysitterService.getBabysitter(userId)).willReturn(babysitter);
+        given(posterRepository.findByBabysitter(babysitter)).willReturn(posters);
+        given(posterMapper.toDTO(any(PosterEntity.class))).willReturn(new PosterDTO());
+
+        List<PosterDTO> resultPosters = posterService.getUserPosters(userId);
+
+        assertThat(resultPosters).isNotEmpty();
+        verify(posterRepository).findByBabysitter(babysitter);
+    }
+
 }
 
 
