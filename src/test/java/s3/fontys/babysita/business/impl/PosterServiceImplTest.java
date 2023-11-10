@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import s3.fontys.babysita.business.BabysitterService;
 import s3.fontys.babysita.business.ParentService;
+import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.PosterMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
 import s3.fontys.babysita.dto.PosterDTO;
@@ -288,6 +289,32 @@ public class PosterServiceImplTest {
 
         assertThat(resultPosters).isNotEmpty();
         verify(posterRepository).findByBabysitter(babysitter);
+    }
+
+    @Test
+    void deletePoster_Success() {
+        int validPosterId = 1;
+        when(posterRepository.existsById(validPosterId)).thenReturn(true);
+
+        assertDoesNotThrow(() -> posterService.deletePoster(validPosterId));
+
+        verify(posterRepository).deleteById(validPosterId);
+    }
+
+    @Test
+    void getUserPosters_UnauthorizedAccess() {
+        int userId = 1; 
+        int differentUserId = 2;
+        String nonAdminRole = "parent";
+
+        when(requestAccessToken.getRole()).thenReturn(nonAdminRole);
+        when(requestAccessToken.getUserId()).thenReturn(differentUserId);
+
+        assertThrows(UnauthorizedDataAccessException.class,
+                () -> posterService.getUserPosters(userId));
+
+        verify(posterRepository, never()).findByParent(any());
+        verify(posterRepository, never()).findByBabysitter(any());
     }
 
 }
