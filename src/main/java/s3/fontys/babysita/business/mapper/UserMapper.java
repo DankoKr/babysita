@@ -2,10 +2,11 @@ package s3.fontys.babysita.business.mapper;
 
 import org.mapstruct.Mapper;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
+import s3.fontys.babysita.domain.UserResponse;
 import s3.fontys.babysita.dto.AdminDTO;
 import s3.fontys.babysita.dto.BabysitterDTO;
 import s3.fontys.babysita.dto.ParentDTO;
-import s3.fontys.babysita.dto.UserDTO;
+import s3.fontys.babysita.domain.UserRequest;
 import s3.fontys.babysita.persistence.entity.AdminEntity;
 import s3.fontys.babysita.persistence.entity.BabysitterEntity;
 import s3.fontys.babysita.persistence.entity.ParentEntity;
@@ -15,17 +16,19 @@ import s3.fontys.babysita.persistence.entity.UserEntity;
 public interface UserMapper {
     ParentDTO toParentDTO(ParentEntity entity);
     ParentEntity toParentEntity(ParentDTO dto);
-    ParentDTO toParentDTO(UserDTO userDTO);
+    ParentDTO toParentDTO(UserRequest userDTO);
 
     BabysitterDTO toBabysitterDTO(BabysitterEntity entity);
     BabysitterEntity toBabysitterEntity(BabysitterDTO dto);
-    BabysitterDTO toBabysitterDTO(UserDTO userDTO);
+    BabysitterDTO toBabysitterDTO(UserRequest userDTO);
 
     AdminDTO toAdminDTO(AdminEntity entity);
     AdminEntity toAdminEntity(AdminDTO dto);
-    AdminDTO toAdminDTO(UserDTO userDTO);
+    AdminDTO toAdminDTO(UserRequest userDTO);
 
-    default UserDTO toDTO(UserEntity entity) {
+    UserResponse toResponse(UserEntity entity);
+
+    default UserRequest toDTO(UserEntity entity) {
         if (entity instanceof ParentEntity) {
             return toParentDTO((ParentEntity) entity);
         } else if (entity instanceof BabysitterEntity) {
@@ -38,7 +41,7 @@ public interface UserMapper {
         }
     }
 
-    default UserEntity toEntity(UserDTO dto) {
+    default UserEntity toEntity(UserRequest dto) {
         if (dto instanceof ParentDTO) {
             return toParentEntity((ParentDTO) dto);
         } else if (dto instanceof BabysitterDTO) {

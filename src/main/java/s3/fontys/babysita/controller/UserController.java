@@ -9,7 +9,8 @@ import s3.fontys.babysita.business.UserService;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
-import s3.fontys.babysita.dto.UserDTO;
+import s3.fontys.babysita.domain.UserRequest;
+import s3.fontys.babysita.domain.UserResponse;
 
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class UserController {
 
     @RolesAllowed({"admin"})
     @GetMapping()
-    public ResponseEntity<Map<Integer, UserDTO>> getAllUsers() {
+    public ResponseEntity<Map<Integer, UserResponse>> getAllUsers() {
         return ResponseEntity.ok(this.userService.getAllUsers());
     }
 
@@ -37,7 +38,7 @@ public class UserController {
     }
 
     @PostMapping()
-    public ResponseEntity<Void> createUser(@RequestBody @Valid UserDTO userDTO)
+    public ResponseEntity<Void> createUser(@RequestBody @Valid UserRequest userDTO)
     {
         try {
             userService.createUser(userDTO, userDTO.getPassword());
@@ -65,7 +66,7 @@ public class UserController {
 
     @RolesAllowed({"babysitter", "parent"})
     @PatchMapping("{userId}")
-    public ResponseEntity<Void> patchUser(@PathVariable int userId, @RequestBody UserDTO userDTO) {
+    public ResponseEntity<Void> patchUser(@PathVariable int userId, @RequestBody UserRequest userDTO) {
         try{
             userService.partialUpdateUser(userId, userDTO);
             return ResponseEntity.noContent().build();

@@ -11,20 +11,18 @@ import s3.fontys.babysita.business.exception.InvalidRoleException;
 import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
+import s3.fontys.babysita.domain.UserResponse;
 import s3.fontys.babysita.dto.AdminDTO;
 import s3.fontys.babysita.dto.BabysitterDTO;
 import s3.fontys.babysita.dto.ParentDTO;
-import s3.fontys.babysita.dto.UserDTO;
+import s3.fontys.babysita.domain.UserRequest;
 import s3.fontys.babysita.persistence.UserRepository;
 import s3.fontys.babysita.persistence.entity.AdminEntity;
 import s3.fontys.babysita.persistence.entity.BabysitterEntity;
 import s3.fontys.babysita.persistence.entity.ParentEntity;
 import s3.fontys.babysita.persistence.entity.UserEntity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -49,7 +47,7 @@ public class UserServiceImplTest {
 
     @Test
     void createUser_NewUser_Success() {
-        UserDTO userDTO = new UserDTO();
+        UserRequest userDTO = new UserRequest();
         userDTO.setUsername("newUser");
         userDTO.setRole("parent");
         String rawPassword = "password123";
@@ -82,7 +80,7 @@ public class UserServiceImplTest {
 
     @Test
     void createUser_ExistingUsername_ThrowsDuplicatedUsernameException() {
-        UserDTO userDTO = new UserDTO();
+        UserRequest userDTO = new UserRequest();
         userDTO.setUsername("existingUser");
 
         when(userRepository.existsByUsername(userDTO.getUsername())).thenReturn(true);
@@ -108,61 +106,65 @@ public class UserServiceImplTest {
         int userId = 1;
         UserEntity userEntity = mock(UserEntity.class);
         userEntity.setId(userId);
-        UserDTO expectedDTO = new UserDTO();
+        UserResponse expectedResponse = new UserResponse();
 
         when(requestAccessToken.getRole()).thenReturn("admin");
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        when(userMapper.toDTO(userEntity)).thenReturn(expectedDTO);
+        when(userMapper.toResponse(userEntity)).thenReturn(expectedResponse);
 
-        UserDTO actualDTO = userService.getUser(userId);
+        UserResponse actualDTO = userService.getUser(userId);
 
-        assertNotNull(actualDTO, "The returned UserDTO should not be null.");
-        assertEquals(expectedDTO, actualDTO, "The returned UserDTO is not the one expected.");
+        assertNotNull(actualDTO, "The returned expectedResponse should not be null.");
+        assertEquals(expectedResponse, actualDTO, "The returned expectedResponse is not the one expected.");
 
         verify(userRepository).findById(userId);
-        verify(userMapper).toDTO(userEntity);
+        verify(userMapper).toResponse(userEntity);
     }
 
     @Test
     void getAllUsers_ReturnsMapOfAllUserDTOs() {
-        List<UserEntity> users = new ArrayList<>();
+        // Arrange
         UserEntity user1 = mock(UserEntity.class);
         UserEntity user2 = mock(UserEntity.class);
+        when(user1.getId()).thenReturn(1);
+        when(user2.getId()).thenReturn(2);
 
-        when(user1.getId()).thenReturn(10);
-        when(user2.getId()).thenReturn(20);
+        UserResponse userResponse1 = new UserResponse();
+        userResponse1.setId(user1.getId());
 
-        users.add(user1);
-        users.add(user2);
+        UserResponse userResponse2 = new UserResponse();
+        userResponse2.setId(user2.getId());
 
+        List<UserEntity> users = Arrays.asList(user1, user2);
         when(userRepository.findAll()).thenReturn(users);
-        when(userMapper.toDTO(any(UserEntity.class))).thenAnswer(invocation -> {
-            UserEntity entity = invocation.getArgument(0);
-            UserDTO dto = new UserDTO();
-            dto.setId(entity.getId());
-            return dto;
-        });
 
-        Map<Integer, UserDTO> result = userService.getAllUsers();
+        when(userMapper.toResponse(user1)).thenReturn(userResponse1);
+        when(userMapper.toResponse(user2)).thenReturn(userResponse2);
 
-        assertNotNull(result);
-        assertEquals(users.size(), result.size());
-        assertTrue(result.containsKey(user1.getId()));
-        assertTrue(result.containsKey(user2.getId()));
+        Map<Integer, UserResponse> result = userService.getAllUsers();
+
+        assertNotNull(result, "Result should not be null");
+        assertEquals(2, result.size(), "Result should contain 2 users");
+
+        assertTrue(result.containsKey(user1.getId()), "Result should contain user1 id");
+        assertTrue(result.containsKey(user2.getId()), "Result should contain user2 id");
+
+        assertEquals(userResponse1, result.get(user1.getId()), "User1 should match");
+        assertEquals(userResponse2, result.get(user2.getId()), "User2 should match");
 
         verify(userRepository).findAll();
-        verify(userMapper, times(users.size())).toDTO(any(UserEntity.class));
+        verify(userMapper).toResponse(user1);
+        verify(userMapper).toResponse(user2);
     }
+
 
     @Test
     void partialUpdateUser_WithValidChanges_UpdatesUser() {
         Integer userId = 1;
-        UserDTO updates = new UserDTO();
+        UserRequest updates = new UserRequest();
         updates.setFirstName("UpdatedName");
         updates.setLastName("UpdatedLastName");
 
-        //CALLS_REAL_METHODS -> invokes the methods instead of mocks that
-        //do not have state and do not automatically retain values
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
         existingUser.setId(userId);
         existingUser.setFirstName("OriginalName");
@@ -182,7 +184,7 @@ public class UserServiceImplTest {
 
     @Test
     void createAdminUser() {
-        UserDTO userDTO = new UserDTO();
+        UserRequest userDTO = new UserRequest();
         userDTO.setUsername("adminUser");
         userDTO.setRole("admin");
 
@@ -198,7 +200,7 @@ public class UserServiceImplTest {
 
     @Test
     void createBabysitterUser() {
-        UserDTO userDTO = new UserDTO();
+        UserRequest userDTO = new UserRequest();
         userDTO.setUsername("babysitterUser");
         userDTO.setRole("babysitter");
 
@@ -214,7 +216,7 @@ public class UserServiceImplTest {
 
     @Test
     void createUserWithInvalidRole() {
-        UserDTO userDTO = new UserDTO();
+        UserRequest userDTO = new UserRequest();
         userDTO.setUsername("someUser");
         userDTO.setRole("invalidRole");
 
@@ -229,7 +231,7 @@ public class UserServiceImplTest {
     @Test
     void updateUserPhoneNumber() {
         Integer userId = 1;
-        UserDTO userUpdates = new UserDTO();
+        UserRequest userUpdates = new UserRequest();
         userUpdates.setPhoneNumber("1234567890");
 
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
@@ -245,7 +247,7 @@ public class UserServiceImplTest {
     @Test
     void updateUserAddress() {
         Integer userId = 1;
-        UserDTO userUpdates = new UserDTO();
+        UserRequest userUpdates = new UserRequest();
         userUpdates.setAddress("New Address");
 
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
@@ -262,7 +264,7 @@ public class UserServiceImplTest {
     @Test
     void updateUserAge() {
         Integer userId = 1;
-        UserDTO userUpdates = new UserDTO();
+        UserRequest userUpdates = new UserRequest();
         userUpdates.setAge(30);
 
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
@@ -284,9 +286,9 @@ public class UserServiceImplTest {
         ParentEntity parentEntity = new ParentEntity();
         parentEntity.setId(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(parentEntity));
-        when(userMapper.toDTO(parentEntity)).thenReturn(new UserDTO());
+        when(userMapper.toResponse(parentEntity)).thenReturn(new UserResponse());
 
-        UserDTO result = userService.getUser(userId);
+        UserResponse result = userService.getUser(userId);
 
         assertNotNull(result);
         verify(userRepository).findById(userId);

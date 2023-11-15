@@ -2,8 +2,9 @@ package s3.fontys.babysita.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import s3.fontys.babysita.domain.UserRequest;
 
 @AllArgsConstructor
 @Getter
-public class AdminDTO extends UserDTO{
+public class AdminDTO extends UserRequest {
 }

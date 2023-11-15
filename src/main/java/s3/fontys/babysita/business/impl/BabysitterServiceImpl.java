@@ -25,12 +25,20 @@ public class BabysitterServiceImpl implements BabysitterService {
     }
 
     @Override
-    public Map<Integer, BabysitterDTO> getAllBabysitters() {
-        List<BabysitterEntity> parents = babysitterRepository.findAll();
-        return parents.stream()
+    public Map<Integer, BabysitterDTO> getAvailableBabysitters() {
+        List<BabysitterEntity> babysitters = babysitterRepository.findByIsAvailableTrue();
+        return babysitters.stream()
                 .collect(Collectors.toMap(
                         BabysitterEntity::getId,
                         userMapper::toBabysitterDTO
                 ));
+    }
+
+    @Override
+    public void updateBabysitterPoints(int babysitterId) {
+        BabysitterEntity babysitter = getBabysitter(babysitterId);
+        int currentPoints = babysitter.getPoints();
+        babysitter.setPoints(currentPoints + 10);
+        babysitterRepository.save(babysitter);
     }
 }

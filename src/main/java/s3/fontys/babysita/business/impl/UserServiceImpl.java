@@ -7,13 +7,13 @@ import s3.fontys.babysita.business.UserService;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
-import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
+import s3.fontys.babysita.domain.UserResponse;
 import s3.fontys.babysita.dto.AdminDTO;
 import s3.fontys.babysita.dto.BabysitterDTO;
 import s3.fontys.babysita.dto.ParentDTO;
-import s3.fontys.babysita.dto.UserDTO;
+import s3.fontys.babysita.domain.UserRequest;
 import s3.fontys.babysita.persistence.UserRepository;
 import s3.fontys.babysita.persistence.entity.UserEntity;
 
@@ -27,31 +27,30 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final AccessToken requestAccessToken;
 
     @Override
-    public void createUser(UserDTO userDTO, String password) {
-        if(!userRepository.existsByUsername(userDTO.getUsername())){
+    public void createUser(UserRequest userRequest, String password) {
+        if(!userRepository.existsByUsername(userRequest.getUsername())){
             String encodedPassword = passwordEncoder.encode(password);
-            userDTO.setPassword(encodedPassword);
+            userRequest.setPassword(encodedPassword);
 
-            if(userDTO.getRole().equals("parent")){
-                ParentDTO parentDTO = userMapper.toParentDTO(userDTO);
-                UserEntity userEntity = userMapper.toEntity(parentDTO);
-                userRepository.save(userEntity);
-            }
-            else if(userDTO.getRole().equals("babysitter")){
-                BabysitterDTO babysitterDTO = userMapper.toBabysitterDTO(userDTO);
-                UserEntity userEntity = userMapper.toEntity(babysitterDTO);
-                userRepository.save(userEntity);
-            }
-            else if(userDTO.getRole().equals("admin")){
-                AdminDTO adminDTO = userMapper.toAdminDTO(userDTO);
-                UserEntity userEntity = userMapper.toEntity(adminDTO);
-                userRepository.save(userEntity);
-            }
-            else {
-                throw new InvalidRoleException("Invalid Role");
+            switch (userRequest.getRole()) {
+                case "parent" -> {
+                    ParentDTO parentDTO = userMapper.toParentDTO(userRequest);
+                    UserEntity userEntity = userMapper.toEntity(parentDTO);
+                    userRepository.save(userEntity);
+                }
+                case "babysitter" -> {
+                    BabysitterDTO babysitterDTO = userMapper.toBabysitterDTO(userRequest);
+                    UserEntity userEntity = userMapper.toEntity(babysitterDTO);
+                    userRepository.save(userEntity);
+                }
+                case "admin" -> {
+                    AdminDTO adminDTO = userMapper.toAdminDTO(userRequest);
+                    UserEntity userEntity = userMapper.toEntity(adminDTO);
+                    userRepository.save(userEntity);
+                }
+                default -> throw new InvalidRoleException("Invalid Role");
             }
         }
         else { throw new DuplicatedUsernameException("Username has already been taken");}
@@ -64,30 +63,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUser(int userId) {
-        if (!requestAccessToken.getRole().equals("admin")) {
-            if (requestAccessToken.getUserId() != userId) {
-                throw new UnauthorizedDataAccessException("USER_ID_NOT_FROM_LOGGED_IN_USER");
-            }
-        }
-
+    public UserResponse getUser(int userId) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new InvalidIdException("User not found"));
-        return userMapper.toDTO(userEntity);
+        return userMapper.toResponse(userEntity);
     }
 
     @Override
-    public Map<Integer, UserDTO> getAllUsers() {
+    public Map<Integer, UserResponse> getAllUsers() {
         List<UserEntity> users = userRepository.findAll();
         return users.stream()
                 .collect(Collectors.toMap(
                         UserEntity::getId,
-                        userMapper::toDTO
+                        userMapper::toResponse
                 ));
     }
 
     @Override
-    public void partialUpdateUser(Integer id, UserDTO userUpdates) {
+    public void partialUpdateUser(Integer id, UserRequest userUpdates) {
         UserEntity existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new InvalidIdException("Invalid User id"));
 

@@ -56,10 +56,10 @@ public class BabysitterServiceImplTest {
         BabysitterDTO babysitterDTO = new BabysitterDTO("female", 22, true);
         List<BabysitterEntity> babysitterEntities = List.of(babysitterEntity);
 
-        when(babysitterRepository.findAll()).thenReturn(babysitterEntities);
+        when(babysitterRepository.findByIsAvailableTrue()).thenReturn(babysitterEntities);
         when(userMapper.toBabysitterDTO(any(BabysitterEntity.class))).thenReturn(babysitterDTO);
 
-        Map<Integer, BabysitterDTO> babysitterMap = babysitterService.getAllBabysitters();
+        Map<Integer, BabysitterDTO> babysitterMap = babysitterService.getAvailableBabysitters();
 
         assertFalse(babysitterMap.isEmpty());
         assertEquals(babysitterDTO, babysitterMap.get(babysitterEntity.getId()));

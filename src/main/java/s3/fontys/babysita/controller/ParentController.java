@@ -1,5 +1,6 @@
 package s3.fontys.babysita.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import java.util.Map;
 public class ParentController {
     private final ParentService parentService;
 
+    @RolesAllowed({"admin"})
     @GetMapping()
     public ResponseEntity<Map<Integer, ParentDTO>> getAllParents() {
         return ResponseEntity.ok(this.parentService.getAllParents());

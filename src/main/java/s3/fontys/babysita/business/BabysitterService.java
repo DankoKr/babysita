@@ -8,5 +8,6 @@ import java.util.Map;
 
 public interface BabysitterService {
     BabysitterEntity getBabysitter(int babysitterId);
-    Map<Integer, BabysitterDTO> getAllBabysitters();
+    Map<Integer, BabysitterDTO> getAvailableBabysitters();
+    void updateBabysitterPoints(int babysitterId);
 }

@@ -19,6 +19,6 @@ public class BabysitterEntity extends UserEntity {
     private int points;
     @Column(name = "is_available")
     private boolean isAvailable = true;
-    @OneToMany(mappedBy = "babysitter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "babysitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PosterEntity> myPosters;
 }

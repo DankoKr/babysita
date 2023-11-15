@@ -1,11 +1,11 @@
 package s3.fontys.babysita.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import s3.fontys.babysita.business.BabysitterService;
+import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.dto.BabysitterDTO;
 
 import java.util.Map;
@@ -17,9 +17,22 @@ import java.util.Map;
 public class BabysitterController {
     private final BabysitterService babysitterService;
 
+    @RolesAllowed({"parent", "admin"})
     @GetMapping()
     public ResponseEntity<Map<Integer, BabysitterDTO>> getAllBabysitters() {
-        return ResponseEntity.ok(this.babysitterService.getAllBabysitters());
+        return ResponseEntity.ok(this.babysitterService.getAvailableBabysitters());
+    }
+
+    @RolesAllowed({"parent"})
+    @PatchMapping("{babysitterId}")
+    public ResponseEntity<Void> updateBabysitterPoints(@PathVariable int babysitterId) {
+        try{
+            babysitterService.updateBabysitterPoints(babysitterId);
+            return ResponseEntity.noContent().build();
+        }
+        catch(InvalidIdException ex){
+            throw new InvalidIdException("Invalid ID.");
+        }
     }
 
 }

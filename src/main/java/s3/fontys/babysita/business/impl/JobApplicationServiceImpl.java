@@ -71,8 +71,12 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         List<JobApplicationEntity> jobApplications = jobApplicationRepository.findByBabysitter(babysitter);
 
         return jobApplications.stream()
-                .map(jobApplicationMapper::toDTO)
-                .peek(dto -> dto.setBabysitterId(babysitter.getId()))
+                .map(jobApplication -> {
+                    JobApplicationDTO dto = jobApplicationMapper.toDTO(jobApplication);
+                    dto.setBabysitterId(babysitter.getId());
+                    dto.setPosterId(jobApplication.getPoster().getId());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

@@ -13,6 +13,6 @@ import java.util.List;
 @Table(name = "parents")
 @PrimaryKeyJoinColumn(name = "user_id")
 public class ParentEntity extends UserEntity{
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PosterEntity> myPosters;
 }

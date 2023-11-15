@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name="posters")
@@ -42,5 +43,8 @@ public class PosterEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="babysitter_id")
     private BabysitterEntity babysitter;
+
+    @OneToMany(mappedBy = "poster", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<JobApplicationEntity> jobApplications;
 }
 
