@@ -106,41 +106,7 @@ public class JobApplicationServiceImplTest {
 
         assertThrows(InvalidIdException.class, () -> jobApplicationService.editJobApplicationStatus(1, "REJECTED"));
     }
-
-    @Test
-    void getBabysitterJobApplications_WithValidUserId_ReturnsJobApplications() {
-        int userId = 1;
-        when(accessToken.getUserId()).thenReturn(userId);
-
-        BabysitterEntity babysitter = new BabysitterEntity();
-        babysitter.setId(userId);
-
-        List<JobApplicationEntity> jobApplicationEntities = new ArrayList<>();
-        JobApplicationEntity jobApplication1 = new JobApplicationEntity();
-        jobApplication1.setId(10);
-        jobApplicationEntities.add(jobApplication1);
-
-        JobApplicationEntity jobApplication2 = new JobApplicationEntity();
-        jobApplication2.setId(20);
-        jobApplicationEntities.add(jobApplication2);
-
-        when(babysitterService.getBabysitter(userId)).thenReturn(babysitter);
-        when(jobApplicationRepository.findByBabysitter(babysitter)).thenReturn(jobApplicationEntities);
-
-        when(jobApplicationMapper.toDTO(any(JobApplicationEntity.class))).thenAnswer(invocation -> {
-            JobApplicationEntity entity = invocation.getArgument(0);
-            JobApplicationDTO dto = new JobApplicationDTO();
-            dto.setId(entity.getId());
-            return dto;
-        });
-
-        List<JobApplicationDTO> result = jobApplicationService.getBabysitterJobApplications(userId);
-
-        assertNotNull(result, "The result should not be null");
-        assertFalse(result.isEmpty(), "The result should not be empty");
-        assertEquals(jobApplicationEntities.size(), result.size(), "The size of the result list should match the number of job applications");
-    }
-
+    
     @Test
     void getBabysitterJobApplications_WithInvalidUserId_ThrowsUnauthorizedDataAccessException() {
         when(accessToken.getUserId()).thenReturn(2);

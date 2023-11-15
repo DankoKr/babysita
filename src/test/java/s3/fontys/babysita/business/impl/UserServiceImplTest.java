@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
-import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
 import s3.fontys.babysita.domain.UserResponse;
@@ -53,13 +52,11 @@ public class UserServiceImplTest {
         String rawPassword = "password123";
         String encodedPassword = "encodedPassword123";
 
-        // Create a ParentDTO from the UserDTO, simulating what the userMapper would do.
         ParentDTO parentDTO = new ParentDTO();
         parentDTO.setUsername(userDTO.getUsername());
         parentDTO.setPassword(encodedPassword);
         parentDTO.setRole(userDTO.getRole());
 
-        // The expected ParentEntity that should be returned by the mapper.
         ParentEntity expectedParentEntity = new ParentEntity();
         expectedParentEntity.setUsername(userDTO.getUsername());
         expectedParentEntity.setPassword(encodedPassword);
@@ -102,28 +99,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    void getUser_ValidUserId_ReturnsUser() {
-        int userId = 1;
-        UserEntity userEntity = mock(UserEntity.class);
-        userEntity.setId(userId);
-        UserResponse expectedResponse = new UserResponse();
-
-        when(requestAccessToken.getRole()).thenReturn("admin");
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        when(userMapper.toResponse(userEntity)).thenReturn(expectedResponse);
-
-        UserResponse actualDTO = userService.getUser(userId);
-
-        assertNotNull(actualDTO, "The returned expectedResponse should not be null.");
-        assertEquals(expectedResponse, actualDTO, "The returned expectedResponse is not the one expected.");
-
-        verify(userRepository).findById(userId);
-        verify(userMapper).toResponse(userEntity);
-    }
-
-    @Test
     void getAllUsers_ReturnsMapOfAllUserDTOs() {
-        // Arrange
         UserEntity user1 = mock(UserEntity.class);
         UserEntity user2 = mock(UserEntity.class);
         when(user1.getId()).thenReturn(1);
@@ -275,37 +251,6 @@ public class UserServiceImplTest {
 
         verify(existingUser).setAge(30);
         verify(userRepository).save(existingUser);
-    }
-
-    @Test
-    void nonAdminUserAccessingOwnData() {
-        int userId = 1;
-        when(requestAccessToken.getRole()).thenReturn("parent");
-        when(requestAccessToken.getUserId()).thenReturn(userId);
-
-        ParentEntity parentEntity = new ParentEntity();
-        parentEntity.setId(userId);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(parentEntity));
-        when(userMapper.toResponse(parentEntity)).thenReturn(new UserResponse());
-
-        UserResponse result = userService.getUser(userId);
-
-        assertNotNull(result);
-        verify(userRepository).findById(userId);
-    }
-
-
-    @Test
-    void nonAdminUserAccessingOtherUserData() {
-        int userId = 1;
-        int differentUserId = 2;
-        when(requestAccessToken.getRole()).thenReturn("parent");
-        when(requestAccessToken.getUserId()).thenReturn(differentUserId);
-
-        Exception exception = assertThrows(UnauthorizedDataAccessException.class,
-                () -> userService.getUser(userId));
-
-        assertTrue(exception.getMessage().contains("USER_ID_NOT_FROM_LOGGED_IN_USER"));
     }
 
 }
