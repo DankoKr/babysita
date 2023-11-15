@@ -40,7 +40,7 @@ public class PosterRepositoryTest {
         parentRepository.save(parent);
 
         PosterEntity posterEntity = new PosterEntity(1, "Title", "Description",
-                "ImageUrl", LocalDate.now(), parent, null);
+                "ImageUrl", LocalDate.now(), parent, null, null);
 
         PosterEntity savedPoster = posterRepository.save(posterEntity);
         assertNotNull(savedPoster.getId());
@@ -60,9 +60,9 @@ public class PosterRepositoryTest {
         ParentEntity savedParent = parentRepository.save(parent);
 
         PosterEntity poster1 = new PosterEntity(null, "Title", "Description",
-                "ImageUrl", LocalDate.now(), savedParent, null);
+                "ImageUrl", LocalDate.now(), savedParent, null, null);
         PosterEntity poster2 = new PosterEntity(null, "Title2", "Description2",
-                "ImageUrl2", LocalDate.now(), savedParent, null);
+                "ImageUrl2", LocalDate.now(), savedParent, null, null);
         posterRepository.save(poster1);
         posterRepository.save(poster2);
 
@@ -94,9 +94,9 @@ public class PosterRepositoryTest {
         BabysitterEntity savedBabysitter = babysitterRepository.save(babysitter);
 
         PosterEntity poster1 = new PosterEntity(null, "Title", "Description",
-                "ImageUrl", LocalDate.now(), savedParent, savedBabysitter);
+                "ImageUrl", LocalDate.now(), savedParent, savedBabysitter, null);
         PosterEntity poster2 = new PosterEntity(null, "Title2", "Description2",
-                "ImageUrl2", LocalDate.now(), savedParent, savedBabysitter);
+                "ImageUrl2", LocalDate.now(), savedParent, savedBabysitter, null);
 
         posterRepository.save(poster1);
         posterRepository.save(poster2);
@@ -115,9 +115,9 @@ public class PosterRepositoryTest {
         ParentEntity savedParent = parentRepository.save(parent);
 
         PosterEntity poster1 = new PosterEntity(null, "Title", "Description",
-                "ImageUrl", LocalDate.now(), savedParent, null);
+                "ImageUrl", LocalDate.now(), savedParent, null, null);
         PosterEntity poster2 = new PosterEntity(null, "Title2", "Description2",
-                "ImageUrl2", LocalDate.now(), savedParent, null);
+                "ImageUrl2", LocalDate.now(), savedParent, null, null);
 
         parentRepository.save(parent);
         posterRepository.save(poster1);
