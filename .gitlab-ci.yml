@@ -34,7 +34,7 @@ build_image:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    docker login -u dankofontys -p Danko2003
+    docker login -u REGISTRY_USER -p $REGISTRY_PASS
   script:
     - docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
     - docker push ${IMAGE_NAME}:${IMAGE_TAG}
@@ -43,6 +43,6 @@ build_image:
 sonarqube:
   stage: sonar
   script:
-    - ./gradlew sonar "-Dsonar.host.url=http://localhost:9000" "-Dsonar.login=$SONAR_TOKEN"
+    - ./gradlew sonar "-Dsonar.host.url=$SONAR_HOST_URL" "-Dsonar.login=$SONAR_TOKEN"
   allow_failure: true
 
