@@ -7,6 +7,7 @@ variables:
 stages:
   - build
   - test
+  - build_image
   - sonar
 
 build:
@@ -26,7 +27,7 @@ test:
 
 
 build_image:
-  stage: build
+  stage: build_image
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
