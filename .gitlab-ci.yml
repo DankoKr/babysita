@@ -3,7 +3,6 @@ variables:
   IMAGE_NAME: dankofontys/babysita-repo
   IMAGE_TAG: babysita-app-1.0
 
-
 stages:
   - build
   - test
@@ -28,7 +27,6 @@ test:
       - build/customJacocoReportDir/test/jacocoTestReport.xml
       - build/test-results/test/
 
-
 build_image:
   stage: build_image
   image: docker:24.0.5
@@ -37,16 +35,13 @@ build_image:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
   script:
     - docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-    - docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}
     - docker push ${IMAGE_NAME}:${IMAGE_TAG}
-
 
 sonarqube:
   stage: sonar
   script:
     - ./gradlew sonar "-Dsonar.host.url=$SONAR_HOST_URL" "-Dsonar.login=$SONAR_TOKEN"
   allow_failure: true
-
