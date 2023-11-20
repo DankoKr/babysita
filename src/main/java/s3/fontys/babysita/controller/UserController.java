@@ -9,9 +9,11 @@ import s3.fontys.babysita.business.UserService;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
+import s3.fontys.babysita.business.exception.NoMatchException;
 import s3.fontys.babysita.domain.UserRequest;
 import s3.fontys.babysita.domain.UserResponse;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -34,6 +36,17 @@ public class UserController {
         }
         catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
+        }
+    }
+
+    @RolesAllowed({"admin", "parent"})
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResponse>> searchUsers(@RequestParam String username) {
+        try {
+            return ResponseEntity.ok(this.userService.searchByUsernamePattern(username));
+        } catch (NoMatchException ex) {
+            throw new NoMatchException("No such user");
+
         }
     }
 
@@ -64,7 +77,7 @@ public class UserController {
         }
     }
 
-    @RolesAllowed({"babysitter", "parent"})
+    @RolesAllowed({"babysitter", "parent", "admin"})
     @PatchMapping("{userId}")
     public ResponseEntity<Void> patchUser(@PathVariable int userId, @RequestBody UserRequest userDTO) {
         try{

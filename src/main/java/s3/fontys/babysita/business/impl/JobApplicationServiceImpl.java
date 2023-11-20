@@ -74,6 +74,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .map(jobApplication -> {
                     JobApplicationDTO dto = jobApplicationMapper.toDTO(jobApplication);
                     dto.setBabysitterId(babysitter.getId());
+                    dto.setParentId(jobApplication.getParent().getId());
                     dto.setPosterId(jobApplication.getPoster().getId());
                     return dto;
                 })

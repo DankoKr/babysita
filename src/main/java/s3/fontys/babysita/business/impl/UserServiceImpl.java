@@ -8,7 +8,6 @@ import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
 import s3.fontys.babysita.business.mapper.UserMapper;
-import s3.fontys.babysita.configuration.security.token.AccessToken;
 import s3.fontys.babysita.domain.UserResponse;
 import s3.fontys.babysita.dto.AdminDTO;
 import s3.fontys.babysita.dto.BabysitterDTO;
@@ -99,8 +98,20 @@ public class UserServiceImpl implements UserService {
         if(userUpdates.getAge() != 0) {
             existingUser.setAge(userUpdates.getAge());
         }
+        if(userUpdates.getProfileImage() != null) {
+            existingUser.setProfileImage(userUpdates.getProfileImage());
+        }
 
         userRepository.save(existingUser);
+    }
+
+    @Override
+    public List<UserResponse> searchByUsernamePattern(String pattern) {
+        String likePattern = "%" + pattern + "%";
+        List<UserEntity> matches = userRepository.findByUsernameLike(likePattern);
+        return matches.stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }
 
