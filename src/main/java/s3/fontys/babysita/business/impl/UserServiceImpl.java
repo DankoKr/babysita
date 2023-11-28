@@ -3,6 +3,7 @@ package s3.fontys.babysita.business.impl;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import s3.fontys.babysita.business.UserService;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;

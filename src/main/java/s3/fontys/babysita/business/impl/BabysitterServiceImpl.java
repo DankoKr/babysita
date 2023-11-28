@@ -2,6 +2,7 @@ package s3.fontys.babysita.business.impl;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import s3.fontys.babysita.business.BabysitterService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.mapper.UserMapper;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class BabysitterServiceImpl implements BabysitterService {
     private final BabysitterRepository babysitterRepository;
     private final UserMapper userMapper;

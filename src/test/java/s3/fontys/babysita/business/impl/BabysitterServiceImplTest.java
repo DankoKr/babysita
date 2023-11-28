@@ -39,14 +39,16 @@ public class BabysitterServiceImplTest {
         BabysitterEntity actualBabysitter = babysitterService.getBabysitter(babysitterId);
 
         assertEquals(expectedBabysitter, actualBabysitter);
+        verify(babysitterRepository).findById(babysitterId);
     }
 
     @Test
     void getBabysitter_nonExistingId_throwsInvalidIdException() {
-        int babysitterId = 999;
+        int babysitterId = -1;
         when(babysitterRepository.findById(babysitterId)).thenReturn(Optional.empty());
 
         assertThrows(InvalidIdException.class, () -> babysitterService.getBabysitter(babysitterId));
+        verify(babysitterRepository).findById(babysitterId);
     }
 
     @Test
@@ -63,5 +65,22 @@ public class BabysitterServiceImplTest {
 
         assertFalse(babysitterMap.isEmpty());
         assertEquals(babysitterDTO, babysitterMap.get(babysitterEntity.getId()));
+        verify(babysitterRepository).findByIsAvailableTrue();
+        verify(userMapper).toBabysitterDTO(babysitterEntity);
+    }
+
+    @Test
+    public void whenUpdateBabysitterPoints_thenPointsAreUpdated() {
+        int babysitterId = 1;
+        BabysitterEntity babysitter = new BabysitterEntity();
+        babysitter.setId(babysitterId);
+        babysitter.setPoints(20);
+
+        when(babysitterRepository.findById(babysitterId)).thenReturn(Optional.of(babysitter));
+
+        babysitterService.updateBabysitterPoints(babysitterId);
+
+        assertEquals(30, babysitter.getPoints());
+        verify(babysitterRepository).save(babysitter);
     }
 }

@@ -1,5 +1,6 @@
 package s3.fontys.babysita.business.impl;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +44,7 @@ class ParentServiceImplTest {
 
         assertNotNull(result, "Parent should not be null");
         assertEquals(parentId, result.getId(), "Parent ID should match the requested ID");
+        verify(parentRepository).findById(parentId);
     }
 
     @Test
@@ -52,6 +54,7 @@ class ParentServiceImplTest {
 
         assertThrows(InvalidIdException.class, () -> parentService.getParent(parentId),
                 "Should throw InvalidIdException when parent not found");
+        verify(parentRepository).findById(anyInt());
     }
 
     @Test
@@ -76,5 +79,7 @@ class ParentServiceImplTest {
         assertNotNull(result, "Resulting map should not be null");
         assertEquals(parentList.size(), result.size(), "Resulting map should have the same size as the parent list");
         assertTrue(result.keySet().containsAll(Arrays.asList(1, 2)), "Resulting map should contain all parent IDs");
+
+        verify(parentRepository).findAll();
     }
 }

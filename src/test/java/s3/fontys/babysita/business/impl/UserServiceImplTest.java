@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
+import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
@@ -236,6 +237,22 @@ public class UserServiceImplTest {
         verify(userRepository).save(existingUser);
     }
 
+    @Test
+    void updateUserImage() {
+        Integer userId = 1;
+        UserRequest userUpdates = new UserRequest();
+        userUpdates.setProfileImage("New image");
+
+        UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+
+        userService.partialUpdateUser(userId, userUpdates);
+
+        verify(existingUser).setProfileImage("New image");
+        verify(userRepository).save(existingUser);
+    }
+
 
     @Test
     void updateUserAge() {
@@ -251,6 +268,60 @@ public class UserServiceImplTest {
 
         verify(existingUser).setAge(30);
         verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    public void testSearchByUsernamePattern() {
+        UserEntity user1 = mock(UserEntity.class);
+        UserEntity user2 = mock(UserEntity.class);
+        when(user1.getId()).thenReturn(1);
+        when(user2.getId()).thenReturn(2);
+
+        UserResponse userResponse1 = new UserResponse();
+        userResponse1.setId(user1.getId());
+        userResponse1.setUsername("test1");
+
+        UserResponse userResponse2 = new UserResponse();
+        userResponse2.setId(user2.getId());
+        userResponse2.setUsername("test2");
+
+        List<UserEntity> users = Arrays.asList(user1, user2);
+        String pattern = "test";
+        String likePattern = "%" + pattern + "%";
+
+        when(userRepository.findByUsernameLike(likePattern)).thenReturn(users);
+        when(userMapper.toResponse(user1)).thenReturn(userResponse1);
+        when(userMapper.toResponse(user2)).thenReturn(userResponse2);
+
+        List<UserResponse> actualResponse = userService.searchByUsernamePattern(pattern);
+
+        assertEquals(2, actualResponse.size());
+        assertEquals(userResponse1, actualResponse.get(0));
+        assertEquals(userResponse2, actualResponse.get(1));
+
+        verify(userRepository).findByUsernameLike(likePattern);
+        verify(userMapper, times(2)).toResponse(any(UserEntity.class));
+    }
+
+    @Test
+    public void whenUserFound_thenReturnsUserResponse() {
+        int userId = 1;
+        UserEntity userEntity = mock(UserEntity.class);
+        UserResponse expectedResponse = new UserResponse();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(userMapper.toResponse(userEntity)).thenReturn(expectedResponse);
+
+        UserResponse actualResponse = userService.getUser(userId);
+
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void whenUserNotFound_thenThrowsException() {
+        int userId = 1;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(InvalidIdException.class, () -> userService.getUser(userId));
     }
 
 }
