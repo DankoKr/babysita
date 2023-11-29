@@ -1,12 +1,11 @@
-package s3.fontys.babysita.dto;
+package s3.fontys.babysita.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import s3.fontys.babysita.domain.UserRequest;
 
 @AllArgsConstructor
 @Getter
-public class BabysitterDTO extends UserRequest {
+public class BabysitterResponse extends UserResponse {
     private String gender;
     private int points;
     private boolean isAvailable;

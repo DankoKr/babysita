@@ -11,7 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import s3.fontys.babysita.business.BabysitterService;
-import s3.fontys.babysita.dto.BabysitterDTO;
+import s3.fontys.babysita.domain.BabysitterResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +35,8 @@ class BabysitterControllerTest {
     @Test
     @WithMockUser(roles = "admin")
     public void getAllBabysittersTest() throws Exception {
-        Map<Integer, BabysitterDTO> babysitters = new HashMap<>();
-        BabysitterDTO babysitter = new BabysitterDTO("male", 100, true);
+        Map<Integer, BabysitterResponse> babysitters = new HashMap<>();
+        BabysitterResponse babysitter = new BabysitterResponse("male", 100, true);
         babysitter.setId(1);
         babysitters.put(1, babysitter);
 

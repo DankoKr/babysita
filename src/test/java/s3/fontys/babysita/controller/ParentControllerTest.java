@@ -11,7 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import s3.fontys.babysita.business.ParentService;
-import s3.fontys.babysita.dto.ParentDTO;
+import s3.fontys.babysita.domain.ParentResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +35,8 @@ class ParentControllerTest {
     @Test
     @WithMockUser(roles = "admin")
     public void getAllParentsTest() throws Exception {
-        Map<Integer, ParentDTO> parents = new HashMap<>();
-        ParentDTO parent = new ParentDTO();
+        Map<Integer, ParentResponse> parents = new HashMap<>();
+        ParentResponse parent = new ParentResponse();
         parent.setId(1);
         parents.put(1, parent);
 

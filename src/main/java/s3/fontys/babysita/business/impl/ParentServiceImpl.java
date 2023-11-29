@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import s3.fontys.babysita.business.ParentService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.mapper.UserMapper;
-import s3.fontys.babysita.dto.ParentDTO;
+import s3.fontys.babysita.domain.ParentResponse;
 import s3.fontys.babysita.persistence.ParentRepository;
 import s3.fontys.babysita.persistence.entity.ParentEntity;
 
@@ -27,12 +27,12 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public Map<Integer, ParentDTO> getAllParents() {
+    public Map<Integer, ParentResponse> getAllParents() {
         List<ParentEntity> parents = parentRepository.findAll();
         return parents.stream()
                 .collect(Collectors.toMap(
                         ParentEntity::getId,
-                        userMapper::toParentDTO
+                        userMapper::toParentResponse
                 ));
     }
 

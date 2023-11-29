@@ -6,11 +6,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import s3.fontys.babysita.business.exception.InvalidIdException;
-import s3.fontys.babysita.dto.BabysitterDTO;
+import s3.fontys.babysita.domain.BabysitterRequest;
+import s3.fontys.babysita.domain.BabysitterResponse;
 import s3.fontys.babysita.persistence.BabysitterRepository;
 import s3.fontys.babysita.persistence.entity.BabysitterEntity;
 import s3.fontys.babysita.business.mapper.UserMapper;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.List;
 import java.util.Map;
@@ -52,21 +54,24 @@ public class BabysitterServiceImplTest {
     }
 
     @Test
-    void getAllBabysitters_returnsBabysitterMap() {
-        BabysitterEntity babysitterEntity = new BabysitterEntity();
-        babysitterEntity.setId(1);
-        BabysitterDTO babysitterDTO = new BabysitterDTO("female", 22, true);
-        List<BabysitterEntity> babysitterEntities = List.of(babysitterEntity);
+    public void testGetAvailableBabysitters() {
+        BabysitterEntity babysitter1 = new BabysitterEntity();
+        babysitter1.setId(1);
+        BabysitterEntity babysitter2 = new BabysitterEntity();
+        babysitter2.setId(2);
 
-        when(babysitterRepository.findByIsAvailableTrue()).thenReturn(babysitterEntities);
-        when(userMapper.toBabysitterDTO(any(BabysitterEntity.class))).thenReturn(babysitterDTO);
+        List<BabysitterEntity> babysitters = Arrays.asList(babysitter1, babysitter2);
 
-        Map<Integer, BabysitterDTO> babysitterMap = babysitterService.getAvailableBabysitters();
+        when(babysitterRepository.findByIsAvailableTrue()).thenReturn(babysitters);
+        when(userMapper.toBabysitterResponse(babysitter1)).thenReturn(new BabysitterResponse("female", 22, true));
+        when(userMapper.toBabysitterResponse(babysitter2)).thenReturn(new BabysitterResponse("male", 19, true));
 
-        assertFalse(babysitterMap.isEmpty());
-        assertEquals(babysitterDTO, babysitterMap.get(babysitterEntity.getId()));
-        verify(babysitterRepository).findByIsAvailableTrue();
-        verify(userMapper).toBabysitterDTO(babysitterEntity);
+        Map<Integer, BabysitterResponse> result = babysitterService.getAvailableBabysitters();
+
+        assertEquals(2, result.size());
+        verify(babysitterRepository, times(1)).findByIsAvailableTrue();
+        verify(userMapper, times(1)).toBabysitterResponse(babysitter1);
+        verify(userMapper, times(1)).toBabysitterResponse(babysitter2);
     }
 
     @Test

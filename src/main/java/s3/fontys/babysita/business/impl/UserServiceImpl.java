@@ -9,11 +9,7 @@ import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
 import s3.fontys.babysita.business.mapper.UserMapper;
-import s3.fontys.babysita.domain.UserResponse;
-import s3.fontys.babysita.dto.AdminDTO;
-import s3.fontys.babysita.dto.BabysitterDTO;
-import s3.fontys.babysita.dto.ParentDTO;
-import s3.fontys.babysita.domain.UserRequest;
+import s3.fontys.babysita.domain.*;
 import s3.fontys.babysita.persistence.UserRepository;
 import s3.fontys.babysita.persistence.entity.UserEntity;
 
@@ -37,18 +33,18 @@ public class UserServiceImpl implements UserService {
 
             switch (userRequest.getRole()) {
                 case "parent" -> {
-                    ParentDTO parentDTO = userMapper.toParentDTO(userRequest);
-                    UserEntity userEntity = userMapper.toEntity(parentDTO);
+                    ParentRequest parentRequest = userMapper.toParentRequest(userRequest);
+                    UserEntity userEntity = userMapper.toEntity(parentRequest);
                     userRepository.save(userEntity);
                 }
                 case "babysitter" -> {
-                    BabysitterDTO babysitterDTO = userMapper.toBabysitterDTO(userRequest);
-                    UserEntity userEntity = userMapper.toEntity(babysitterDTO);
+                    BabysitterRequest babysitterRequest = userMapper.toBabysitterRequest(userRequest);
+                    UserEntity userEntity = userMapper.toEntity(babysitterRequest);
                     userRepository.save(userEntity);
                 }
                 case "admin" -> {
-                    AdminDTO adminDTO = userMapper.toAdminDTO(userRequest);
-                    UserEntity userEntity = userMapper.toEntity(adminDTO);
+                    AdminRequest adminRequest = userMapper.toAdminRequest(userRequest);
+                    UserEntity userEntity = userMapper.toEntity(adminRequest);
                     userRepository.save(userEntity);
                 }
                 default -> throw new InvalidRoleException("Invalid Role");
