@@ -74,6 +74,8 @@ public class PosterServiceImplTest {
         assertThatThrownBy(() -> posterService.deletePoster(posterId))
                 .isInstanceOf(InvalidIdException.class)
                 .hasMessageContaining("Invalid ID.");
+
+        verify(posterRepository).existsById(posterId);
     }
 
     @Test
@@ -146,6 +148,8 @@ public class PosterServiceImplTest {
         assertThatThrownBy(() -> posterService.editPoster(posterId, updatedPosterDTO))
                 .isInstanceOf(InvalidIdException.class)
                 .hasMessageContaining("Invalid ID.");
+
+        verify(posterRepository).existsById(posterId);
     }
 
     @Test

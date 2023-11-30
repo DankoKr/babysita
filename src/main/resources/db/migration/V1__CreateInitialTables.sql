@@ -6,7 +6,7 @@ CREATE TABLE `users`
     email        varchar(50) NOT NULL,
     first_name    varchar(50),
     last_name     varchar(50),
-    profile_image varchar(500),
+    profile_image TEXT,
     phone_number  varchar(50),
     address      varchar(50),
     role         varchar(50) NOT NULL,

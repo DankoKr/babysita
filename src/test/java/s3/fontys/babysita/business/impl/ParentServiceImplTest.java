@@ -1,6 +1,5 @@
 package s3.fontys.babysita.business.impl;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -8,12 +7,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import s3.fontys.babysita.domain.ParentResponse;
 import s3.fontys.babysita.persistence.ParentRepository;
 import s3.fontys.babysita.business.mapper.UserMapper;
-import s3.fontys.babysita.dto.ParentDTO;
 import s3.fontys.babysita.persistence.entity.ParentEntity;
 import s3.fontys.babysita.business.exception.InvalidIdException;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +42,7 @@ class ParentServiceImplTest {
 
         assertNotNull(result, "Parent should not be null");
         assertEquals(parentId, result.getId(), "Parent ID should match the requested ID");
+        verify(parentRepository).findById(parentId);
     }
 
     @Test
@@ -52,29 +52,30 @@ class ParentServiceImplTest {
 
         assertThrows(InvalidIdException.class, () -> parentService.getParent(parentId),
                 "Should throw InvalidIdException when parent not found");
+        verify(parentRepository).findById(anyInt());
     }
 
     @Test
-    void getAllParents_ReturnsMapOfParentDTOs() {
+    public void testGetAllParents() {
+        // Arrange
         ParentEntity parent1 = new ParentEntity();
         parent1.setId(1);
         ParentEntity parent2 = new ParentEntity();
         parent2.setId(2);
 
-        List<ParentEntity> parentList = Arrays.asList(parent1, parent2);
-        when(parentRepository.findAll()).thenReturn(parentList);
+        List<ParentEntity> parents = Arrays.asList(parent1, parent2);
 
-        when(userMapper.toParentDTO(any(ParentEntity.class))).thenAnswer(invocation -> {
-            ParentEntity entity = invocation.getArgument(0);
-            ParentDTO dto = new ParentDTO();
-            dto.setId(entity.getId());
-            return dto;
-        });
+        when(parentRepository.findAll()).thenReturn(parents);
+        when(userMapper.toParentResponse(parent1)).thenReturn(new ParentResponse());
+        when(userMapper.toParentResponse(parent2)).thenReturn(new ParentResponse());
 
-        Map<Integer, ParentDTO> result = parentService.getAllParents();
+        // Act
+        Map<Integer, ParentResponse> result = parentService.getAllParents();
 
-        assertNotNull(result, "Resulting map should not be null");
-        assertEquals(parentList.size(), result.size(), "Resulting map should have the same size as the parent list");
-        assertTrue(result.keySet().containsAll(Arrays.asList(1, 2)), "Resulting map should contain all parent IDs");
+        // Assert
+        assertEquals(2, result.size());
+        verify(parentRepository, times(1)).findAll();
+        verify(userMapper, times(1)).toParentResponse(parent1);
+        verify(userMapper, times(1)).toParentResponse(parent2);
     }
 }

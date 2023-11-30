@@ -66,6 +66,9 @@ public class JobApplicationServiceImplTest {
         jobApplicationService.createJobApplication(dto);
 
         verify(jobApplicationRepository).save(entity);
+        verify(babysitterService).getBabysitter(dto.getBabysitterId());
+        verify(posterService).getPosterEntity(dto.getPosterId());
+        verify(parentService).getParent(dto.getParentId());
     }
 
     @Test
@@ -76,6 +79,7 @@ public class JobApplicationServiceImplTest {
         jobApplicationService.deleteJobApplication(jobApplicationId);
 
         verify(jobApplicationRepository).deleteById(jobApplicationId);
+        verify(jobApplicationRepository).existsById(jobApplicationId);
     }
 
     @Test
@@ -84,6 +88,7 @@ public class JobApplicationServiceImplTest {
         when(jobApplicationRepository.existsById(jobApplicationId)).thenReturn(false);
 
         assertThrows(InvalidIdException.class, () -> jobApplicationService.deleteJobApplication(jobApplicationId));
+        verify(jobApplicationRepository).existsById(jobApplicationId);
     }
 
     @Test
@@ -98,6 +103,7 @@ public class JobApplicationServiceImplTest {
 
         verify(jobApplicationRepository).save(jobApplication);
         assertEquals(newStatus, jobApplication.getStatus());
+        verify(jobApplicationRepository).findById(jobApplicationId);
     }
 
     @Test
@@ -105,6 +111,7 @@ public class JobApplicationServiceImplTest {
         when(jobApplicationRepository.findById(anyInt())).thenReturn(Optional.empty());
 
         assertThrows(InvalidIdException.class, () -> jobApplicationService.editJobApplicationStatus(1, "REJECTED"));
+        verify(jobApplicationRepository).findById(anyInt());
     }
     
     @Test
@@ -112,6 +119,7 @@ public class JobApplicationServiceImplTest {
         when(accessToken.getUserId()).thenReturn(2);
 
         assertThrows(UnauthorizedDataAccessException.class, () -> jobApplicationService.getBabysitterJobApplications(1));
+        verify(accessToken).getUserId();
     }
 
     @Test
@@ -156,6 +164,9 @@ public class JobApplicationServiceImplTest {
         assertNotNull(result, "The result should not be null");
         assertFalse(result.isEmpty(), "The result should not be empty");
         assertEquals(jobApplicationEntities.size(), result.size(), "The size of the result list should match the number of job applications");
+        verify(parentService).getParent(userId);
+        verify(jobApplicationRepository).findByParent(parent);
+        verify(jobApplicationMapper, times(jobApplicationEntities.size())).toDTO(any(JobApplicationEntity.class));
     }
 
     @Test
@@ -163,6 +174,55 @@ public class JobApplicationServiceImplTest {
         when(accessToken.getUserId()).thenReturn(2);
 
         assertThrows(UnauthorizedDataAccessException.class, () -> jobApplicationService.getParentJobApplications(1));
+        verify(accessToken).getUserId();
+    }
+
+    @Test
+    public void getBabysitterJobApplications_WithValidUserId_ReturnsJobApplications() {
+        int userId = 2;
+        when(accessToken.getUserId()).thenReturn(userId);
+
+        ParentEntity parent = new ParentEntity();
+        parent.setId(1);
+        BabysitterEntity babysitter = new BabysitterEntity();
+        babysitter.setId(userId);
+        PosterEntity poster = new PosterEntity();
+        poster.setId(1);
+
+        List<JobApplicationEntity> jobApplicationEntities = new ArrayList<>();
+        JobApplicationEntity jobApplication1 = new JobApplicationEntity();
+        jobApplication1.setId(10);
+        jobApplication1.setParent(parent);
+        jobApplication1.setBabysitter(babysitter);
+        jobApplication1.setPoster(poster);
+        jobApplicationEntities.add(jobApplication1);
+
+        JobApplicationEntity jobApplication2 = new JobApplicationEntity();
+        jobApplication2.setId(20);
+        jobApplication2.setParent(parent);
+        jobApplication2.setBabysitter(babysitter);
+        jobApplication2.setPoster(poster);
+        jobApplicationEntities.add(jobApplication2);
+
+        when(babysitterService.getBabysitter(userId)).thenReturn(babysitter);
+        when(jobApplicationRepository.findByBabysitter(babysitter)).thenReturn(jobApplicationEntities);
+
+        when(jobApplicationMapper.toDTO(any(JobApplicationEntity.class))).thenAnswer(invocation -> {
+            JobApplicationEntity entity = invocation.getArgument(0);
+            JobApplicationDTO dto = new JobApplicationDTO();
+            dto.setId(entity.getId());
+            return dto;
+        });
+
+        List<JobApplicationDTO> result = jobApplicationService.getBabysitterJobApplications(userId);
+
+        assertNotNull(result, "The result should not be null");
+        assertFalse(result.isEmpty(), "The result should not be empty");
+        assertEquals(jobApplicationEntities.size(), result.size(), "The size of the result list should match the number of job applications");
+
+        verify(babysitterService).getBabysitter(userId);
+        verify(jobApplicationRepository).findByBabysitter(babysitter);
+        verify(jobApplicationMapper, times(jobApplicationEntities.size())).toDTO(any(JobApplicationEntity.class));
     }
 
 }

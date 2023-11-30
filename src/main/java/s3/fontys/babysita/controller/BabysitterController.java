@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import s3.fontys.babysita.business.BabysitterService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
-import s3.fontys.babysita.dto.BabysitterDTO;
+import s3.fontys.babysita.domain.BabysitterResponse;
 
 import java.util.Map;
 
@@ -19,7 +19,7 @@ public class BabysitterController {
 
     @RolesAllowed({"parent", "admin"})
     @GetMapping()
-    public ResponseEntity<Map<Integer, BabysitterDTO>> getAllBabysitters() {
+    public ResponseEntity<Map<Integer, BabysitterResponse>> getAllBabysitters() {
         return ResponseEntity.ok(this.babysitterService.getAvailableBabysitters());
     }
 

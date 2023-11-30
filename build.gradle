@@ -17,12 +17,6 @@ jacocoTestReport {
         xml.required = true
         html.required = true
     }
-    afterEvaluate {
-        // Set the class directories to include only the 'business' folder classes
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, include: '**/s3/fontys/babysita/business/**/*.class', exclude: '**/*Test.class')
-        }))
-    }
 }
 
 

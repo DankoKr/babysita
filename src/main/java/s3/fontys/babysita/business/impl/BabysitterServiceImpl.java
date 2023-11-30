@@ -2,10 +2,11 @@ package s3.fontys.babysita.business.impl;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import s3.fontys.babysita.business.BabysitterService;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.mapper.UserMapper;
-import s3.fontys.babysita.dto.BabysitterDTO;
+import s3.fontys.babysita.domain.BabysitterResponse;
 import s3.fontys.babysita.persistence.BabysitterRepository;
 import s3.fontys.babysita.persistence.entity.BabysitterEntity;
 
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class BabysitterServiceImpl implements BabysitterService {
     private final BabysitterRepository babysitterRepository;
     private final UserMapper userMapper;
@@ -25,12 +27,12 @@ public class BabysitterServiceImpl implements BabysitterService {
     }
 
     @Override
-    public Map<Integer, BabysitterDTO> getAvailableBabysitters() {
+    public Map<Integer, BabysitterResponse> getAvailableBabysitters() {
         List<BabysitterEntity> babysitters = babysitterRepository.findByIsAvailableTrue();
         return babysitters.stream()
                 .collect(Collectors.toMap(
                         BabysitterEntity::getId,
-                        userMapper::toBabysitterDTO
+                        userMapper::toBabysitterResponse
                 ));
     }
 

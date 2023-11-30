@@ -7,14 +7,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
+import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
-import s3.fontys.babysita.domain.UserResponse;
-import s3.fontys.babysita.dto.AdminDTO;
-import s3.fontys.babysita.dto.BabysitterDTO;
-import s3.fontys.babysita.dto.ParentDTO;
-import s3.fontys.babysita.domain.UserRequest;
+import s3.fontys.babysita.domain.*;
 import s3.fontys.babysita.persistence.UserRepository;
 import s3.fontys.babysita.persistence.entity.AdminEntity;
 import s3.fontys.babysita.persistence.entity.BabysitterEntity;
@@ -46,31 +43,30 @@ public class UserServiceImplTest {
 
     @Test
     void createUser_NewUser_Success() {
-        UserRequest userDTO = new UserRequest();
-        userDTO.setUsername("newUser");
-        userDTO.setRole("parent");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername("newUser");
+        userRequest.setRole("parent");
         String rawPassword = "password123";
         String encodedPassword = "encodedPassword123";
 
-        ParentDTO parentDTO = new ParentDTO();
-        parentDTO.setUsername(userDTO.getUsername());
-        parentDTO.setPassword(encodedPassword);
-        parentDTO.setRole(userDTO.getRole());
+        ParentRequest parentRequest = new ParentRequest();
+        parentRequest.setUsername(userRequest.getUsername());
+        parentRequest.setPassword(encodedPassword);
+        parentRequest.setRole(userRequest.getRole());
 
         ParentEntity expectedParentEntity = new ParentEntity();
-        expectedParentEntity.setUsername(userDTO.getUsername());
-        expectedParentEntity.setPassword(encodedPassword);
-        expectedParentEntity.setRole(userDTO.getRole());
+        expectedParentEntity.setUsername(userRequest.getUsername());
+        expectedParentEntity.setRole(userRequest.getRole());
 
         when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
-        when(userMapper.toParentDTO(userDTO)).thenReturn(parentDTO);
-        when(userMapper.toEntity(parentDTO)).thenReturn(expectedParentEntity);
+        when(userMapper.toParentRequest(userRequest)).thenReturn(parentRequest);
+        when(userMapper.toEntity(parentRequest)).thenReturn(expectedParentEntity);
         when(userRepository.save(any(UserEntity.class))).thenReturn(expectedParentEntity);
 
-        assertDoesNotThrow(() -> userService.createUser(userDTO, rawPassword));
+        assertDoesNotThrow(() -> userService.createUser(userRequest, rawPassword));
 
-        verify(userMapper).toParentDTO(userDTO);
-        verify(userMapper).toEntity(parentDTO);
+        verify(userMapper).toParentRequest(userRequest);
+        verify(userMapper).toEntity(parentRequest);
         verify(userRepository).save(expectedParentEntity);
     }
 
@@ -99,7 +95,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    void getAllUsers_ReturnsMapOfAllUserDTOs() {
+    void getAllUsers_ReturnsMapOfAllUserResponses() {
         UserEntity user1 = mock(UserEntity.class);
         UserEntity user2 = mock(UserEntity.class);
         when(user1.getId()).thenReturn(1);
@@ -160,32 +156,32 @@ public class UserServiceImplTest {
 
     @Test
     void createAdminUser() {
-        UserRequest userDTO = new UserRequest();
-        userDTO.setUsername("adminUser");
-        userDTO.setRole("admin");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername("adminUser");
+        userRequest.setRole("admin");
 
         when(userRepository.existsByUsername("adminUser")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-        when(userMapper.toAdminDTO(userDTO)).thenReturn(new AdminDTO());
-        when(userMapper.toEntity(any(AdminDTO.class))).thenReturn(new AdminEntity());
+        when(userMapper.toAdminRequest(userRequest)).thenReturn(new AdminRequest());
+        when(userMapper.toEntity(any(AdminRequest.class))).thenReturn(new AdminEntity());
 
-        userService.createUser(userDTO, "password");
+        userService.createUser(userRequest, "password");
 
         verify(userRepository).save(any(AdminEntity.class));
     }
 
     @Test
     void createBabysitterUser() {
-        UserRequest userDTO = new UserRequest();
-        userDTO.setUsername("babysitterUser");
-        userDTO.setRole("babysitter");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername("babysitterUser");
+        userRequest.setRole("babysitter");
 
         when(userRepository.existsByUsername("babysitterUser")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-        when(userMapper.toBabysitterDTO(userDTO)).thenReturn(new BabysitterDTO("female", 22, true));
-        when(userMapper.toEntity(any(BabysitterDTO.class))).thenReturn(new BabysitterEntity());
+        when(userMapper.toBabysitterRequest(userRequest)).thenReturn(new BabysitterRequest());
+        when(userMapper.toEntity(any(BabysitterRequest.class))).thenReturn(new BabysitterEntity());
 
-        userService.createUser(userDTO, "password");
+        userService.createUser(userRequest, "password");
 
         verify(userRepository).save(any(BabysitterEntity.class));
     }
@@ -236,6 +232,22 @@ public class UserServiceImplTest {
         verify(userRepository).save(existingUser);
     }
 
+    @Test
+    void updateUserImage() {
+        Integer userId = 1;
+        UserRequest userUpdates = new UserRequest();
+        userUpdates.setProfileImage("New image");
+
+        UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+
+        userService.partialUpdateUser(userId, userUpdates);
+
+        verify(existingUser).setProfileImage("New image");
+        verify(userRepository).save(existingUser);
+    }
+
 
     @Test
     void updateUserAge() {
@@ -251,6 +263,60 @@ public class UserServiceImplTest {
 
         verify(existingUser).setAge(30);
         verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    public void testSearchByUsernamePattern() {
+        UserEntity user1 = mock(UserEntity.class);
+        UserEntity user2 = mock(UserEntity.class);
+        when(user1.getId()).thenReturn(1);
+        when(user2.getId()).thenReturn(2);
+
+        UserResponse userResponse1 = new UserResponse();
+        userResponse1.setId(user1.getId());
+        userResponse1.setUsername("test1");
+
+        UserResponse userResponse2 = new UserResponse();
+        userResponse2.setId(user2.getId());
+        userResponse2.setUsername("test2");
+
+        List<UserEntity> users = Arrays.asList(user1, user2);
+        String pattern = "test";
+        String likePattern = "%" + pattern + "%";
+
+        when(userRepository.findByUsernameLike(likePattern)).thenReturn(users);
+        when(userMapper.toResponse(user1)).thenReturn(userResponse1);
+        when(userMapper.toResponse(user2)).thenReturn(userResponse2);
+
+        List<UserResponse> actualResponse = userService.searchByUsernamePattern(pattern);
+
+        assertEquals(2, actualResponse.size());
+        assertEquals(userResponse1, actualResponse.get(0));
+        assertEquals(userResponse2, actualResponse.get(1));
+
+        verify(userRepository).findByUsernameLike(likePattern);
+        verify(userMapper, times(2)).toResponse(any(UserEntity.class));
+    }
+
+    @Test
+    public void whenUserFound_thenReturnsUserResponse() {
+        int userId = 1;
+        UserEntity userEntity = mock(UserEntity.class);
+        UserResponse expectedResponse = new UserResponse();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(userMapper.toResponse(userEntity)).thenReturn(expectedResponse);
+
+        UserResponse actualResponse = userService.getUser(userId);
+
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void whenUserNotFound_thenThrowsException() {
+        int userId = 1;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(InvalidIdException.class, () -> userService.getUser(userId));
     }
 
 }
