@@ -319,4 +319,36 @@ public class UserServiceImplTest {
         assertThrows(InvalidIdException.class, () -> userService.getUser(userId));
     }
 
+    @Test
+    void getUsersById_BothUsersExist() {
+        int firstUserId = 1;
+        int secondUserId = 2;
+
+        UserEntity userEntity1 = mock(UserEntity.class);
+        UserEntity userEntity2 = mock(UserEntity.class);
+
+        UserResponse userResponse1 = new UserResponse();
+        UserResponse userResponse2 = new UserResponse();
+
+        when(userRepository.findById(firstUserId)).thenReturn(Optional.of(userEntity1));
+        when(userRepository.findById(secondUserId)).thenReturn(Optional.of(userEntity2));
+
+        when(userMapper.toResponse(userEntity1)).thenReturn(userResponse1);
+        when(userMapper.toResponse(userEntity2)).thenReturn(userResponse2);
+
+        var result = userService.getUsersById(firstUserId, secondUserId);
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains(userResponse1));
+        assertTrue(result.contains(userResponse2));
+
+        // Verify that findById was called for both user IDs
+        verify(userRepository).findById(firstUserId);
+        verify(userRepository).findById(secondUserId);
+
+        // Verify that toResponse was called for both user entities
+        verify(userMapper).toResponse(userEntity1);
+        verify(userMapper).toResponse(userEntity2);
+    }
+
 }

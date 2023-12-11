@@ -9,16 +9,18 @@ import org.springframework.web.bind.annotation.RestController;
 import s3.fontys.babysita.business.NotificationService;
 import s3.fontys.babysita.domain.NotificationMessage;
 
+import java.util.Objects;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/messages")
 public class NotificationController {
     private final NotificationService notificationService;
 
-    @MessageMapping("/send")
+    @MessageMapping("/send") //Will react only to the SEND messages to the destination
     public void sendMessage(@Payload NotificationMessage message, SimpMessageHeaderAccessor headerAccessor) {
         // Extract the username of the sender
-        String username = headerAccessor.getUser().getName();
+        String username = Objects.requireNonNull(headerAccessor.getUser()).getName();
 
         // Broadcast the message to the intended recipient(s)
         notificationService.broadcastMessage(message);

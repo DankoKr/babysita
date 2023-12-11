@@ -39,6 +39,17 @@ public class UserController {
         }
     }
 
+    @RolesAllowed({"admin", "babysitter", "parent"})
+    @GetMapping("/{firstUserId}/{secondUserId}")
+    public ResponseEntity<List<UserResponse>> getUsersById(@PathVariable int firstUserId,
+                                           @PathVariable int secondUserId) {
+        try {
+            return ResponseEntity.ok(this.userService.getUsersById(firstUserId, secondUserId));
+        } catch(InvalidIdException ex) {
+            throw new InvalidIdException("Invalid ID.");
+        }
+    }
+
     @RolesAllowed({"admin", "parent"})
     @GetMapping("/search")
     public ResponseEntity<List<UserResponse>> searchUsers(@RequestParam String username) {

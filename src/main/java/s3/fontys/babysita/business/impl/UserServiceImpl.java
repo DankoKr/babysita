@@ -13,6 +13,7 @@ import s3.fontys.babysita.domain.*;
 import s3.fontys.babysita.persistence.UserRepository;
 import s3.fontys.babysita.persistence.entity.UserEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -110,6 +111,16 @@ public class UserServiceImpl implements UserService {
         return matches.stream()
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserResponse> getUsersById(int firstUserId, int secondUserId) {
+        List<UserResponse> users = new ArrayList<>();
+        UserResponse user1 = getUser(firstUserId);
+        UserResponse user2 = getUser(secondUserId);
+        users.add(user1);
+        users.add(user2);
+        return users;
     }
 }
 
