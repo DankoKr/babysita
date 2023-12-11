@@ -266,7 +266,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testSearchByUsernamePattern() {
+     void testSearchByUsernamePattern() {
         UserEntity user1 = mock(UserEntity.class);
         UserEntity user2 = mock(UserEntity.class);
         when(user1.getId()).thenReturn(1);
@@ -299,7 +299,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void whenUserFound_thenReturnsUserResponse() {
+     void whenUserFound_thenReturnsUserResponse() {
         int userId = 1;
         UserEntity userEntity = mock(UserEntity.class);
         UserResponse expectedResponse = new UserResponse();
@@ -312,7 +312,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void whenUserNotFound_thenThrowsException() {
+     void whenUserNotFound_thenThrowsException() {
         int userId = 1;
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 

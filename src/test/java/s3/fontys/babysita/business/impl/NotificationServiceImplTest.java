@@ -22,7 +22,7 @@ public class NotificationServiceImplTest {
     private NotificationServiceImpl notificationService;
 
     @Test
-    public void testBroadcastMessage() {
+     void testBroadcastMessage() {
         NotificationMessage message = new NotificationMessage();
         message.setFrom("sender");
         message.setTo("recipient");
@@ -37,7 +37,7 @@ public class NotificationServiceImplTest {
     }
 
     @Test
-    public void testSendMessageToUser() {
+     void testSendMessageToUser() {
         NotificationMessage message = new NotificationMessage();
         message.setFrom("sender");
         message.setTo("recipient");

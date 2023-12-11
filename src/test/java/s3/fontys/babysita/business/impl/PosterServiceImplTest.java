@@ -98,7 +98,7 @@ public class PosterServiceImplTest {
     }
 
     @Test
-    public void getPoster_WithInvalidId() {
+     void getPoster_WithInvalidId() {
         when(posterRepository.findById(1)).thenReturn(Optional.empty());
 
         assertThrows(InvalidIdException.class, () -> posterService.getPoster(1));
@@ -123,7 +123,7 @@ public class PosterServiceImplTest {
         assertThat(existingEntity.getDescription()).isEqualTo(updatedPosterDTO.getDescription());
     }
     @Test
-    public void patchPoster_WithValidId() {
+     void patchPoster_WithValidId() {
         PosterEntity existingEntity = new PosterEntity();
         PosterDTO patchedPosterDTO = new PosterDTO();
         patchedPosterDTO.setTitle("New Title");
@@ -197,7 +197,6 @@ public class PosterServiceImplTest {
 
         List<PosterDTO> result = new ArrayList<>(posterService.getPostersWithoutBabysitterId().values());
 
-        assertThat(result).isNotEmpty();
         assertThat(result).hasSize(postersWithoutBabysitter.size());
         verify(posterRepository).findByBabysitterIsNull();
         verify(posterMapper, times(postersWithoutBabysitter.size())).toDTO(any(PosterEntity.class));

@@ -178,7 +178,7 @@ public class JobApplicationServiceImplTest {
     }
 
     @Test
-    public void getBabysitterJobApplications_WithValidUserId_ReturnsJobApplications() {
+     void getBabysitterJobApplications_WithValidUserId_ReturnsJobApplications() {
         int userId = 2;
         when(accessToken.getUserId()).thenReturn(userId);
 

@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import s3.fontys.babysita.business.exception.InvalidIdException;
-import s3.fontys.babysita.domain.BabysitterRequest;
 import s3.fontys.babysita.domain.BabysitterResponse;
 import s3.fontys.babysita.persistence.BabysitterRepository;
 import s3.fontys.babysita.persistence.entity.BabysitterEntity;
@@ -54,7 +53,7 @@ public class BabysitterServiceImplTest {
     }
 
     @Test
-    public void testGetAvailableBabysitters() {
+     void testGetAvailableBabysitters() {
         BabysitterEntity babysitter1 = new BabysitterEntity();
         babysitter1.setId(1);
         BabysitterEntity babysitter2 = new BabysitterEntity();
@@ -75,7 +74,7 @@ public class BabysitterServiceImplTest {
     }
 
     @Test
-    public void whenUpdateBabysitterPoints_thenPointsAreUpdated() {
+     void whenUpdateBabysitterPoints_thenPointsAreUpdated() {
         int babysitterId = 1;
         BabysitterEntity babysitter = new BabysitterEntity();
         babysitter.setId(babysitterId);
