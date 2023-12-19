@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class JobApplicationServiceImplTest {
+class JobApplicationServiceImplTest {
 
     @Mock
     private JobApplicationRepository jobApplicationRepository;

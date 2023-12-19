@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
+import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
 import s3.fontys.babysita.configuration.security.token.AccessToken;
 import s3.fontys.babysita.domain.*;
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
+class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
@@ -84,14 +85,36 @@ public class UserServiceImplTest {
     }
 
     @Test
-    void deleteUser_ValidId_Success() {
+    public void deleteUser_ShouldDeleteUserWhenAdmin() {
         int userId = 1;
+        when(requestAccessToken.getRole()).thenReturn("admin");
 
-        doNothing().when(userRepository).deleteById(userId);
-
-        assertDoesNotThrow(() -> userService.deleteUser(userId));
+        userService.deleteUser(userId);
 
         verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    public void deleteUser_ShouldDeleteUserWhenSameUser() {
+        int userId = 1;
+        when(requestAccessToken.getRole()).thenReturn("user");
+        when(requestAccessToken.getUserId()).thenReturn(userId);
+
+        userService.deleteUser(userId);
+
+        verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    public void deleteUser_ShouldThrowExceptionWhenDifferentUser() {
+        int userId = 1;
+        int differentUserId = 2;
+        when(requestAccessToken.getRole()).thenReturn("user");
+        when(requestAccessToken.getUserId()).thenReturn(differentUserId);
+
+        assertThrows(UnauthorizedDataAccessException.class, () -> userService.deleteUser(userId));
+
+        verify(userRepository, never()).deleteById(anyInt());
     }
 
     @Test
@@ -137,6 +160,9 @@ public class UserServiceImplTest {
         updates.setFirstName("UpdatedName");
         updates.setLastName("UpdatedLastName");
 
+        when(requestAccessToken.getRole()).thenReturn("user");
+        when(requestAccessToken.getUserId()).thenReturn(userId);
+
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
         existingUser.setId(userId);
         existingUser.setFirstName("OriginalName");
@@ -153,6 +179,7 @@ public class UserServiceImplTest {
         verify(userRepository).findById(userId);
         verify(userRepository).save(existingUser);
     }
+
 
     @Test
     void createAdminUser() {
@@ -205,13 +232,15 @@ public class UserServiceImplTest {
         Integer userId = 1;
         UserRequest userUpdates = new UserRequest();
         userUpdates.setPhoneNumber("1234567890");
-
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
-
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(requestAccessToken.getUserId()).thenReturn(userId);
+        when(requestAccessToken.getRole()).thenReturn("user");
 
         userService.partialUpdateUser(userId, userUpdates);
 
+        verify(requestAccessToken).getUserId();
+        verify(requestAccessToken).getRole();
         verify(existingUser).setPhoneNumber("1234567890");
         verify(userRepository).save(existingUser);
     }
@@ -221,13 +250,15 @@ public class UserServiceImplTest {
         Integer userId = 1;
         UserRequest userUpdates = new UserRequest();
         userUpdates.setAddress("New Address");
-
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
-
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(requestAccessToken.getUserId()).thenReturn(userId);
+        when(requestAccessToken.getRole()).thenReturn("user");
 
         userService.partialUpdateUser(userId, userUpdates);
 
+        verify(requestAccessToken).getUserId();
+        verify(requestAccessToken).getRole();
         verify(existingUser).setAddress("New Address");
         verify(userRepository).save(existingUser);
     }
@@ -237,32 +268,44 @@ public class UserServiceImplTest {
         Integer userId = 1;
         UserRequest userUpdates = new UserRequest();
         userUpdates.setProfileImage("New image");
-
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
-
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(requestAccessToken.getUserId()).thenReturn(userId);
+        when(requestAccessToken.getRole()).thenReturn("user");
 
         userService.partialUpdateUser(userId, userUpdates);
 
+        verify(requestAccessToken).getUserId();
+        verify(requestAccessToken).getRole();
         verify(existingUser).setProfileImage("New image");
         verify(userRepository).save(existingUser);
     }
-
 
     @Test
     void updateUserAge() {
         Integer userId = 1;
         UserRequest userUpdates = new UserRequest();
         userUpdates.setAge(30);
-
         UserEntity existingUser = mock(UserEntity.class, CALLS_REAL_METHODS);
-
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(requestAccessToken.getUserId()).thenReturn(userId);
+        when(requestAccessToken.getRole()).thenReturn("user");
 
         userService.partialUpdateUser(userId, userUpdates);
 
+        verify(requestAccessToken).getUserId();
+        verify(requestAccessToken).getRole();
         verify(existingUser).setAge(30);
         verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    void updateUser_ThrowsExceptionWhenUserNotFound() {
+        Integer userId = 1;
+        UserRequest userUpdates = new UserRequest();
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(InvalidIdException.class, () -> userService.partialUpdateUser(userId, userUpdates));
     }
 
     @Test

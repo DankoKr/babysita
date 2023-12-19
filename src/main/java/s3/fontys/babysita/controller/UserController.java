@@ -6,10 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import s3.fontys.babysita.business.UserService;
-import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
-import s3.fontys.babysita.business.exception.InvalidIdException;
-import s3.fontys.babysita.business.exception.InvalidRoleException;
-import s3.fontys.babysita.business.exception.NoMatchException;
+import s3.fontys.babysita.business.exception.*;
 import s3.fontys.babysita.domain.UserRequest;
 import s3.fontys.babysita.domain.UserResponse;
 
@@ -86,6 +83,9 @@ public class UserController {
         catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
         }
+        catch(UnauthorizedDataAccessException ex){
+            throw new UnauthorizedDataAccessException("USER_ID_NOT_FROM_LOGGED_IN_USER");
+        }
     }
 
     @RolesAllowed({"babysitter", "parent", "admin"})
@@ -97,6 +97,9 @@ public class UserController {
         }
         catch(InvalidIdException ex){
             throw new InvalidIdException("Invalid ID.");
+        }
+        catch(UnauthorizedDataAccessException ex){
+            throw new UnauthorizedDataAccessException("USER_ID_NOT_FROM_LOGGED_IN_USER");
         }
     }
 

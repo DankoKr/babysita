@@ -28,7 +28,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PosterServiceImplTest {
+class PosterServiceImplTest {
 
     @Mock
     private PosterRepository posterRepository;

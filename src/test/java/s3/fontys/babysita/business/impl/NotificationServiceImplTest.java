@@ -13,7 +13,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
-public class NotificationServiceImplTest {
+class NotificationServiceImplTest {
 
     @Mock
     private SimpMessagingTemplate messagingTemplate;

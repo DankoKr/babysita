@@ -8,7 +8,9 @@ import s3.fontys.babysita.business.UserService;
 import s3.fontys.babysita.business.exception.DuplicatedUsernameException;
 import s3.fontys.babysita.business.exception.InvalidIdException;
 import s3.fontys.babysita.business.exception.InvalidRoleException;
+import s3.fontys.babysita.business.exception.UnauthorizedDataAccessException;
 import s3.fontys.babysita.business.mapper.UserMapper;
+import s3.fontys.babysita.configuration.security.token.AccessToken;
 import s3.fontys.babysita.domain.*;
 import s3.fontys.babysita.persistence.UserRepository;
 import s3.fontys.babysita.persistence.entity.UserEntity;
@@ -25,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AccessToken accessToken;
 
     @Override
     public void createUser(UserRequest userRequest, String password) {
@@ -57,6 +60,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(int userId) {
+        checkUserPermission(userId);
         userRepository.deleteById(userId);
     }
 
@@ -81,6 +85,8 @@ public class UserServiceImpl implements UserService {
     public void partialUpdateUser(Integer id, UserRequest userUpdates) {
         UserEntity existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new InvalidIdException("Invalid User id"));
+
+        checkUserPermission(id);
 
         if(userUpdates.getFirstName() != null) {
             existingUser.setFirstName(userUpdates.getFirstName());
@@ -121,6 +127,15 @@ public class UserServiceImpl implements UserService {
         users.add(user1);
         users.add(user2);
         return users;
+    }
+
+    @Override
+    public void checkUserPermission(int userId) {
+        if (!accessToken.getRole().equals("admin")) {
+            if (accessToken.getUserId() != userId) {
+                throw new UnauthorizedDataAccessException("USER_ID_NOT_FROM_LOGGED_IN_USER");
+            }
+        }
     }
 }
 
