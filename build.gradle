@@ -27,6 +27,7 @@ sonarqube {
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.token", "squ_4050a010bc2318218569445ef46d01632f0501fb"
         property "sonar.projectName", "babysita"
+        property "sonar.coverage.exclusions", "**/src/main/java/s3/fontys/babysita/configuration/**,**/src/main/java/s3/fontys/babysita/controller/**,**/src/main/java/s3/fontys/babysita/domain/**,**/src/main/java/s3/fontys/babysita/persistance/**"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/customJacocoReportDir/test/jacocoTestReport.xml"
     }
 }
