@@ -85,7 +85,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void deleteUser_ShouldDeleteUserWhenAdmin() {
+     void deleteUser_ShouldDeleteUserWhenAdmin() {
         int userId = 1;
         when(requestAccessToken.getRole()).thenReturn("admin");
 
@@ -95,7 +95,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void deleteUser_ShouldDeleteUserWhenSameUser() {
+     void deleteUser_ShouldDeleteUserWhenSameUser() {
         int userId = 1;
         when(requestAccessToken.getRole()).thenReturn("user");
         when(requestAccessToken.getUserId()).thenReturn(userId);
@@ -106,7 +106,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void deleteUser_ShouldThrowExceptionWhenDifferentUser() {
+     void deleteUser_ShouldThrowExceptionWhenDifferentUser() {
         int userId = 1;
         int differentUserId = 2;
         when(requestAccessToken.getRole()).thenReturn("user");
