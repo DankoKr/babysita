@@ -56,8 +56,7 @@ class ParentServiceImplTest {
     }
 
     @Test
-    public void testGetAllParents() {
-        // Arrange
+     void testGetAllParents() {
         ParentEntity parent1 = new ParentEntity();
         parent1.setId(1);
         ParentEntity parent2 = new ParentEntity();
@@ -69,10 +68,8 @@ class ParentServiceImplTest {
         when(userMapper.toParentResponse(parent1)).thenReturn(new ParentResponse());
         when(userMapper.toParentResponse(parent2)).thenReturn(new ParentResponse());
 
-        // Act
         Map<Integer, ParentResponse> result = parentService.getAllParents();
 
-        // Assert
         assertEquals(2, result.size());
         verify(parentRepository, times(1)).findAll();
         verify(userMapper, times(1)).toParentResponse(parent1);

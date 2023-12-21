@@ -12,4 +12,6 @@ public interface UserService {
     Map<Integer, UserResponse> getAllUsers();
     void partialUpdateUser(Integer id, UserRequest userUpdates);
     List<UserResponse> searchByUsernamePattern(String pattern);
+    List<UserResponse> getUsersById(int firstUserId, int secondUserId);
+    void checkUserPermission(int userId);
 }
