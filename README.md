@@ -1,92 +1,507 @@
 # Babysita
 
+Spring Boot server that was implemented during my third semester at Fontys.
 
+## Technologies used
 
-## Getting started
+The suggested IDE for this project is [IntelliJ](https://www.jetbrains.com/idea/)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- [Java Spring Boot](https://spring.io/projects/spring-boot) framework for Java API
+- [Gradle](https://gradle.org/) Build tool for dependancies and environment
+- [MySQL](https://www.mysql.com/)
+- [Docker](https://www.docker.com/)
+- JWT token for Authentication and Authorization
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## 📂 Project Structure
 
-## Add your files
+The project structure layout:
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+```python
+babysita-web-main/
+  ├── documents/                          # Project documents
+  ├── gradle/                             # Gradle wrapper
+  ├── src/main/java/s3.fontys.babysita    # Application source code
+  │   ├── business/                       # Business related classes
+  │   │   └── exceptions/                 # Exceptions classes
+  │   │   └── impl/                       # Implementation of the service interface classes
+  │   │   └── mapper/                     # Mapper for the classes
+  │   ├── configuration/                  # The files responsible for the authentication and the exception handler class
+  │   │   └── exceptionhandler/           # Exception handler
+  │   │   └── security/                   # Folder with all the authentication logic (Token, SecurityConfig)
+  │   │   └── WebSocketConfig             # Configuration for Websockets
+  │   ├── controller/                     # Controller classes
+  │   ├── domain/                         # All classes for Request/Response
+  │   ├── dto/                            # Dto classes
+  │   ├── persistance/                    # Database related classes and interfaces
+  │   │   └── entity/                     # Entity classes
+  ├── src/test/java/s3.fontys.babysita/   # This is the mirrored main structre but for tests
+  ├── .gitlab-ci.yml                      # Pipeline setup
+  ├── build.gradle                        # Gradle dependancies and packages
+  ├── Dockerfile                          # File for generating a docker image
+  ├── settings.gradle                     # Gradle settings
+  ├── wait-for-db.sh                      # Script for the db that is used in the Dockerfile
+  ├── gradlew.bat
+  └── gradlew
+```
+
+## Testing
+
+Testing is done using [Mockito](https://site.mockito.org/) and the [Spring Boot testing](https://www.baeldung.com/spring-boot-testing).
+
+## Routes
+
+# Permission is requireed to all endpoints except the one below. In order to get such you need to send a Bearer token.
+
+# Get the token by login in
 
 ```
-cd existing_repo
-git remote add origin https://git.fhict.nl/I500872/babysita.git
-git branch -M main
-git push -uf origin main
+curl -X POST -H "Content-Type: application/json" -d '{
+    "username": "",
+    "password": "",
+}' http://example.com/tokens
 ```
 
-## Integrate with your tools
+As a response you get the Bearer token:
 
-- [ ] [Set up project integrations](https://git.fhict.nl/I500872/babysita/-/settings/integrations)
+```json
+{
+  "accessToken": ""
+}
+```
 
-## Collaborate with your team
+# Endpoints for user
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+## Get all users - admin only
 
-## Test and Deploy
+```
+curl -X GET http://example.com/users
+```
 
-Use the built-in continuous integration in GitLab.
+You get a list of all of the users in the following format :
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```json
+{
+    "1": {
+        "id": 1,
+        "username": "",
+        "email": "",
+        "firstName": "",
+        "lastName": "",
+        "profileImage": "",
+        "phoneNumber": "",
+        "address": "",
+        "role": "",
+        "age":
+    },
+    "2": {
+        "id": 2,
+        "username": "",
+        "email": "",
+        "firstName": "",
+        "lastName": "",
+        "profileImage": "",
+        "phoneNumber": "",
+        "address": "",
+        "role": "",
+        "age":
+    },
+}
+```
 
-***
+## Get a user via the user Id - admin and the a given user for their data only
 
-# Editing this README
+```
+curl -X GET http://example.com/users/1
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+You get the user in the following json
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+```json
+{
+    "id": 1,
+    "username": "",
+    "email": "",
+    "firstName": "",
+    "lastName": "",
+    "profileImage": "",
+    "phoneNumber": "",
+    "address": "",
+    "role": "",
+    "age":
+}
+```
 
-## Name
-Choose a self-explaining name for your project.
+## Get a user via the user username - admin and parent
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```
+curl -X GET http://example.com/users/search/username
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+You get the user in the following json
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```json
+{
+    "id": 1,
+    "username": "username",
+    "email": "",
+    "firstName": "",
+    "lastName": "",
+    "profileImage": "",
+    "phoneNumber": "",
+    "address": "",
+    "role": "",
+    "age":
+}
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Create a user - everyone
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+    "username": "",
+    "password": "",
+    "email": "",
+    "firstName": "",
+    "lastName": "",
+    "profileImage": "",
+    "phoneNumber": "",
+    "address": "",
+    "role": "",
+    "age": ,
+    "gender": ""
+}' http://example.com/users/
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+You get 204 response.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Update one data for a user - admin or a given user
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+```
+curl -X PATCH -H "Content-Type: application/json" -d '{
+    "atrribute_name": ""
+}' http://example.com/users/1
+```
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+###
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+As a return you get response 204.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+## Delete a user - admin or a given user
 
-## License
-For open source projects, say how it is licensed.
+If you need to delete a user just :
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```
+curl -X DELETE http://example.com/users/1
+```
+
+As a return you get response 204.
+
+# Endpoints for posters
+
+## Get all posters and posters without a babysitter - babysitter only
+
+Without a babysitter:
+
+```
+curl -X GET http://example.com/posters/noBabysitter
+```
+
+For all:
+
+```
+curl -X GET http://example.com/posters
+```
+
+You get the list of all of the posters without a babysitter in the following format :
+
+```json
+{
+  "1": {
+    "id": 1,
+    "title": "",
+    "description": "",
+    "imageUrl": "",
+    "eventDate": "2023-11-10",
+    "parentId": 0,
+    "babysitterId": 0
+  },
+  "2": {
+    "id": 2,
+    "title": "",
+    "description": "",
+    "imageUrl": "",
+    "eventDate": "2023-11-29",
+    "parentId": 0,
+    "babysitterId": 0
+  }
+}
+```
+
+## Create a poster - parent only
+
+```
+curl -X POST http://example.com/offices/
+```
+
+You can create a poster that requires the following body :
+
+```json
+{
+  "title": "",
+  "description": "",
+  "imageUrl": "",
+  "eventDate": "",
+  "parentId": 1
+}
+```
+
+## Get a specific poster via the poster id - everyone
+
+```
+curl -X GET http://example.com/posters/1
+```
+
+You get all info of the specified poster
+
+```json
+{
+    "id": 1,
+    "title": "",
+    "description": "",
+    "imageUrl": "",
+    "eventDate": "2023-11-29",
+    "parentId": 0,
+    "babysitterId": 0
+},
+```
+
+## Update the babysitterId for a poster - parent only
+
+```
+curl -X PATCH -H "Content-Type: application/json" -d '{
+  "babysitterId": 1,
+}' http://example.com/posters/2
+```
+
+And as a response you get "Poster successfully assigned to babysitter.".
+
+## Update the poster information - parent and admin
+
+```
+curl -X PUT -H "Content-Type: application/json" -d '{
+    "title": "",
+    "description": "",
+    "imageUrl": "",
+    "eventDate": "2023-11-29",
+}' http://example.com/posters/2
+```
+
+And as a response you get status 204.
+
+## Delete a poster via the poster id - parent and admin
+
+```
+curl -X DELETE http://example.com/posters/1
+```
+
+And as a response you get status 204.
+
+# Endpoints for babysitter specifics
+
+## Get all babysitters - parent and admin
+
+```
+curl -X GET http://example.com/babysitters
+```
+
+You get a list of all of the babysitters in the following format :
+
+```json
+{
+    "1": {
+        "id": 1,
+        "username": "",
+        "email": "",
+        "firstName": "",
+        "lastName": "",
+        "profileImage": "",
+        "phoneNumber": "",
+        "address": "",
+        "role": "babysitter",
+        "age": ,
+        "gender": ,
+        "points": 90,
+        "available": false
+    },
+    "2": {
+        "id": 2,
+        "username": "",
+        "email": "",
+        "firstName": "",
+        "lastName": "",
+        "profileImage": "",
+        "phoneNumber": "",
+        "address": "",
+        "role": "babysitter",
+        "age": ,
+        "gender": ,
+        "points": 40,
+        "available": true
+    },
+}
+```
+
+## Update babysitter points - parent only
+
+```
+curl -X PATCH -H "Content-Type: application/json" -d '{
+    "atrribute_name": ""
+}' http://example.com/babysitters/1
+```
+
+As a return you get response 204.
+
+# Endpoints for parents specifics
+
+## Get all parents - admin only
+
+```
+curl -X GET http://example.com/parents
+```
+
+You get a list of all of the parents in the following format :
+
+```json
+{
+    "1": {
+        "id": 1,
+        "username": "",
+        "email": "",
+        "firstName": "",
+        "lastName": "",
+        "profileImage": "",
+        "phoneNumber": "",
+        "address": "",
+        "role": "parent",
+        "age": ,
+    },
+    "2": {
+        "id": 2,
+        "username": "",
+        "email": "",
+        "firstName": "",
+        "lastName": "",
+        "profileImage": "",
+        "phoneNumber": "",
+        "address": "",
+        "role": "parent",
+        "age": ,
+    },
+}
+```
+
+# Endpoints for jobApplications
+
+## Create a jobApplication - babysitter only
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+    "description": "",
+    "status" "Pending",
+    "babysitterId" 1,
+    "posterId" 1,
+    "parentId" 2,
+}' http://example.com/jobApplications/
+```
+
+You get 204 as response.
+
+## Get babysitter jobApplications via the babysitter Id - babysitter only
+
+```
+curl -X GET http://example.com/jobApplications/babysitter/1
+```
+
+You get the jobApplications in the following json
+
+```json
+{
+  "1": {
+    "id": 1,
+    "description": "",
+    "status": "Pending",
+    "babysitterId": 1,
+    "posterId": 1,
+    "parentId": 2
+  },
+  "2": {
+    "id": 2,
+    "description": "",
+    "status": "Approved",
+    "babysitterId": 1,
+    "posterId": 2,
+    "parentId": 2
+  }
+}
+```
+
+## Get parent jobApplications via the parent Id - parent only
+
+```
+curl -X GET http://example.com/jobApplications/parent/1
+```
+
+You get the jobApplications in the following json
+
+```json
+{
+  "1": {
+    "id": 1,
+    "description": "",
+    "status": "Pending",
+    "babysitterId": 1,
+    "posterId": 1,
+    "parentId": 2
+  },
+  "2": {
+    "id": 2,
+    "description": "",
+    "status": "Approved",
+    "babysitterId": 1,
+    "posterId": 2,
+    "parentId": 2
+  }
+}
+```
+
+## Delete a jobApplication - parent only
+
+If you need to delete a jobApplication just :
+
+```
+curl -X DELETE http://example.com/jobApplications/1
+```
+
+As a return you get response 204.
+
+## Change the status of a jobApplication - parent only
+
+```
+curl -X PATCH -H "Content-Type: application/json" -d '{
+    "atrribute_name": ""
+}' http://example.com/jobApplications/1
+```
+
+As a return you get response 204.
+
+## CI/CD
+
+The pipeline is configured for [GitLab](https://about.gitlab.com/) using GitLab veriables for security.
+The pipeline has 4 stages:
+
+- build
+- test
+- build_image
+- sonar
+
+The build builds the application and if it does not fail goes to the next stage - runs all tests. If it passes it builds a docker image from the Dockerfile and pushes it to Docker Hub. The last stage is the SonarQube code analysis which gives statistics for the code quality (found on http://localhost:9000).
